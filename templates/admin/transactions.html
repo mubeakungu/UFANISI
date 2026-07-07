@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Transactions{% endblock %}
+{% block body %}
+<div class="flex flex-col md:flex-row">
+    {% include "_sidebar.html" %}
+    <main class="flex-1 p-6 md:p-10">
+        <h1 class="text-2xl font-extrabold text-slate-900 mb-6">All Transactions</h1>
+
+        <form method="GET" class="flex flex-wrap items-center gap-3 mb-5">
+            <select name="status" onchange="this.form.submit()" class="form-input w-auto py-2">
+                <option value="">All statuses</option>
+                <option value="completed" {{ "selected" if status_filter == "completed" }}>Completed</option>
+                <option value="pending" {{ "selected" if status_filter == "pending" }}>Pending</option>
+                <option value="failed" {{ "selected" if status_filter == "failed" }}>Failed</option>
+            </select>
+            <select name="type" onchange="this.form.submit()" class="form-input w-auto py-2">
+                <option value="">All types</option>
+                <option value="deposit" {{ "selected" if type_filter == "deposit" }}>Deposit</option>
+                <option value="withdrawal" {{ "selected" if type_filter == "withdrawal" }}>Withdrawal</option>
+                <option value="withdrawal_request" {{ "selected" if type_filter == "withdrawal_request" }}>Withdrawal Request</option>
+                <option value="interest_accrual" {{ "selected" if type_filter == "interest_accrual" }}>Interest Accrual</option>
+                <option value="interest_withdrawal" {{ "selected" if type_filter == "interest_withdrawal" }}>Interest Withdrawal</option>
+            </select>
+            {% if status_filter or type_filter %}
+                <a href="{{ url_for('admin.transactions') }}" class="text-sm text-slate-500 hover:text-slate-700">Clear filters</a>
+            {% endif %}
+        </form>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="data-table w-full">
+                    <thead>
+                        <tr><th>Date</th><th>Member</th><th>Type</th><th>Channel</th><th>Amount</th><th>Status</th><th>Receipt/Notes</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for tx in (pagination.items if pagination else []) %}
+                        <tr>
+                            <td>{{ tx.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.member_detail', user_id=tx.account.owner.id) }}" class="text-brand-700 font-semibold hover:underline">
+                                    {{ tx.account.owner.full_name }}
+                                </a>
+                            </td>
+                            <td class="capitalize">{{ tx.tx_type.replace('_', ' ') }}</td>
+                            <td class="capitalize">{{ tx.channel }}</td>
+                            <td>KES {{ "{:,.2f}".format(tx.amount) }}</td>
+                            <td>
+                                {% if tx.status == 'completed' %}
+                                    <span class="badge-pill bg-brand-700/10 text-brand-700">Completed</span>
+                                {% elif tx.status == 'pending' %}
+                                    <span class="badge-pill bg-gold-500/15 text-gold-600">Pending</span>
+                                {% else %}
+                                    <span class="badge-pill bg-red-100 text-red-600">Failed</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-slate-400">{{ tx.mpesa_receipt or tx.notes or '-' }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="7" class="text-center text-slate-400 py-10">No transactions match these filters.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if pagination and pagination.pages > 1 %}
+            <div class="flex items-center justify-between px-5 py-4 border-t border-slate-100">
+                <p class="text-xs text-slate-400">Page {{ pagination.page }} of {{ pagination.pages }}</p>
+                <div class="flex gap-2">
+                    {% if pagination.has_prev %}
+                        <a href="{{ url_for('admin.transactions', page=pagination.prev_num, status=status_filter, type=type_filter) }}" class="text-sm font-semibold text-brand-700 hover:underline">&larr; Newer</a>
+                    {% endif %}
+                    {% if pagination.has_next %}
+                        <a href="{{ url_for('admin.transactions', page=pagination.next_num, status=status_filter, type=type_filter) }}" class="text-sm font-semibold text-brand-700 hover:underline">Older &rarr;</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

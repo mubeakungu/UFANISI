@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Admin Overview{% endblock %}
+{% block body %}
+<div class="flex flex-col md:flex-row">
+    {% include "_sidebar.html" %}
+
+    <main class="flex-1 p-6 md:p-10">
+        <div class="mb-8">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900">Admin Overview</h1>
+            <p class="text-slate-500 mt-1 text-sm">{{ sacco_name }} management dashboard</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                <div class="stat-icon bg-brand-700/10 text-brand-700 mb-3">&#128101;</div>
+                <p class="text-2xl font-extrabold text-slate-900">{{ total_members }}</p>
+                <p class="text-slate-400 text-xs mt-1">Total Members</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                <div class="stat-icon bg-gold-500/15 text-gold-600 mb-3">&#9989;</div>
+                <p class="text-2xl font-extrabold text-slate-900">{{ pending_count }}</p>
+                <p class="text-slate-400 text-xs mt-1">Pending Requests</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                <div class="stat-icon bg-slate-100 text-slate-600 mb-3">&#128179;</div>
+                <p class="text-2xl font-extrabold text-slate-900">KSH {{ "{:,.0f}".format(total_savings) }}</p>
+                <p class="text-slate-400 text-xs mt-1">Total Savings</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                <div class="stat-icon bg-brand-700/10 text-brand-700 mb-3">&#128200;</div>
+                <p class="text-2xl font-extrabold text-slate-900">KSH {{ "{:,.0f}".format(total_interest_liability) }}</p>
+                <p class="text-slate-400 text-xs mt-1">Total Earnings Paid</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+                <h3 class="font-bold text-slate-900 mb-1">Weekly Interest</h3>
+                <p class="text-sm text-slate-500">
+                    Mode: <strong class="capitalize text-slate-700">{{ interest_mode }}</strong> &mdash;
+                    {% if interest_mode == 'flat' %}
+                        KES {{ "{:,.2f}".format(interest_flat_amount) }} flat per week
+                    {% else %}
+                        {{ "{:.2%}".format(interest_rate) }} of balance per week
+                    {% endif %}
+                    for accounts with balance &ge; KES {{ "{:,.0f}".format(min_deposit) }}.
+                </p>
+            </div>
+            <form method="POST" action="{{ url_for('admin.run_interest') }}">
+                <button type="submit" class="bg-brand-700 hover:bg-brand-600 text-white font-semibold rounded-xl px-4 py-2.5 text-sm transition">
+                    Run Weekly Interest Now
+                </button>
+            </form>
+        </div>
+
+        {% if pending_withdrawals %}
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm mb-6">
+            <div class="p-5 pb-3"><h3 class="font-bold text-slate-900">Pending Withdrawal Requests</h3></div>
+            <div class="overflow-x-auto">
+                <table class="data-table w-full">
+                    <thead><tr><th>Date</th><th>Member</th><th>Type</th><th>Amount</th><th>Notes</th><th></th></tr></thead>
+                    <tbody>
+                    {% for tx in pending_withdrawals %}
+                        <tr>
+                            <td>{{ tx.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+                            <td>{{ tx.account.owner.full_name }}</td>
+                            <td>{{ "Interest" if tx.tx_type == "interest_withdrawal" else "Savings" }}</td>
+                            <td>KES {{ "{:,.2f}".format(tx.amount) }}</td>
+                            <td class="text-slate-400">{{ tx.notes or '-' }}</td>
+                            <td class="whitespace-nowrap">
+                                <form method="POST" action="{{ url_for('admin.approve_withdrawal', tx_id=tx.id) }}" class="inline">
+                                    <button class="bg-brand-700 hover:bg-brand-600 text-white text-xs font-semibold rounded-lg px-3 py-1.5">Approve</button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin.reject_withdrawal', tx_id=tx.id) }}" class="inline">
+                                    <button class="border border-red-300 text-red-600 hover:bg-red-50 text-xs font-semibold rounded-lg px-3 py-1.5">Reject</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm">
+                <div class="flex items-center justify-between p-5 pb-3">
+                    <h3 class="font-bold text-slate-900">Top Savers</h3>
+                    <a href="{{ url_for('admin.members') }}" class="text-sm text-brand-700 font-semibold hover:underline">View all</a>
+                </div>
+                <div class="px-5 pb-5 space-y-3">
+                    {% for m in top_savers %}
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full bg-forest-900/10 flex items-center justify-center text-forest-900 text-xs font-bold">{{ m.full_name[0]|upper }}</div>
+                                <div>
+                                    <p class="text-sm font-semibold text-slate-800">{{ m.full_name }}</p>
+                                    <p class="text-xs text-slate-400">{{ m.member_number }}</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-bold text-slate-800">KSH {{ "{:,.0f}".format(m.account.balance) }}</p>
+                                <span class="badge-pill bg-brand-700/10 text-brand-700 text-[11px]">{{ "active" if m.is_active_member else "inactive" }}</span>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="text-center text-slate-400 py-6 text-sm">No members yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm">
+                <div class="flex items-center justify-between p-5 pb-3">
+                    <h3 class="font-bold text-slate-900">Recent Transactions</h3>
+                    <a href="{{ url_for('admin.transactions') }}" class="text-sm text-brand-700 font-semibold hover:underline">View all</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="data-table w-full">
+                        <thead><tr><th>Member</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
+                        <tbody>
+                        {% for tx in recent_tx %}
+                            <tr>
+                                <td>{{ tx.account.owner.full_name }}</td>
+                                <td class="capitalize">{{ tx.tx_type.replace('_',' ') }}</td>
+                                <td>KES {{ "{:,.2f}".format(tx.amount) }}</td>
+                                <td>
+                                    {% if tx.status == 'completed' %}
+                                        <span class="badge-pill bg-brand-700/10 text-brand-700">Completed</span>
+                                    {% elif tx.status == 'pending' %}
+                                        <span class="badge-pill bg-gold-500/15 text-gold-600">Pending</span>
+                                    {% else %}
+                                        <span class="badge-pill bg-red-100 text-red-600">Failed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="4" class="text-center text-slate-400 py-8">No transactions yet.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

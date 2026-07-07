@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Grow Your Savings{% endblock %}
+{% block body %}
+
+<nav class="border-b border-slate-100">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-forest-900 flex items-center justify-center text-gold-500 font-extrabold text-sm">U</div>
+            <span class="font-extrabold text-slate-900">{{ sacco_name }}</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{{ url_for('auth.admin_login') }}" class="hidden sm:inline text-xs text-slate-400 hover:text-slate-600">Admin</a>
+            <a href="{{ url_for('auth.login') }}" class="text-sm font-semibold text-slate-600 hover:text-slate-900">Sign In</a>
+            <a href="{{ url_for('auth.register') }}" class="bg-forest-900 hover:bg-forest-800 text-white text-sm font-semibold rounded-lg px-4 py-2 transition">Register</a>
+        </div>
+    </div>
+</nav>
+
+<header class="relative overflow-hidden">
+    <div class="hero-blob w-96 h-96 bg-brand-700/10 -top-20 -left-20"></div>
+    <div class="hero-blob w-96 h-96 bg-gold-500/10 top-10 right-0"></div>
+    <div class="max-w-3xl mx-auto px-6 pt-20 pb-16 text-center relative z-10">
+        <span class="badge-pill bg-sand-100 text-gold-600 mb-6">Earn KSH 500/week per KSH 5,000 saved</span>
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 leading-tight mb-5">
+            Grow Your <span class="text-brand-700">Savings</span><br>with {{ sacco_name }}
+        </h1>
+        <p class="text-slate-500 text-lg max-w-xl mx-auto mb-8">
+            Kenya's trusted savings community. Deposit via M-Pesa, earn weekly returns,
+            and withdraw flexibly &mdash; all from one platform.
+        </p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-10">
+            <a href="{{ url_for('auth.register') }}" class="w-full sm:w-auto bg-brand-700 hover:bg-brand-600 text-white font-semibold rounded-xl px-6 py-3.5 transition">
+                Get Started Free &rarr;
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="w-full sm:w-auto bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-semibold rounded-xl px-6 py-3.5 transition">
+                Sign In
+            </a>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-3">
+            <div class="bg-white border border-slate-200 rounded-xl px-5 py-2.5 text-center">
+                <p class="font-extrabold text-slate-900">KSH 5K</p>
+                <p class="text-xs text-slate-400">Min Deposit</p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl px-5 py-2.5 text-center">
+                <p class="font-extrabold text-slate-900">KSH 500</p>
+                <p class="text-xs text-slate-400">Weekly Return</p>
+            </div>
+            <div class="bg-white border border-slate-200 rounded-xl px-5 py-2.5 text-center">
+                <p class="font-extrabold text-slate-900">Weekly</p>
+                <p class="text-xs text-slate-400">Access</p>
+            </div>
+        </div>
+    </div>
+</header>
+
+<section class="max-w-5xl mx-auto px-6 py-16">
+    <div class="text-center mb-10">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">Why Choose {{ sacco_name.split(' ')[0] }}?</h2>
+        <p class="text-slate-500">Simple, transparent, and rewarding savings for every Kenyan</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div class="stat-icon bg-brand-700/10 text-brand-700 mb-3">&#128200;</div>
+            <h3 class="font-bold text-slate-900 mb-1">Weekly Earnings</h3>
+            <p class="text-sm text-slate-500">Earn KSH 500 every week for every KSH 5,000 saved. Your savings grow automatically.</p>
+        </div>
+        <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div class="stat-icon bg-gold-500/15 text-gold-600 mb-3">&#128737;</div>
+            <h3 class="font-bold text-slate-900 mb-1">Secure &amp; Trusted</h3>
+            <p class="text-sm text-slate-500">Your savings are safe with Ufanisi SACCO. Regulated, transparent, and member owned.</p>
+        </div>
+        <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div class="stat-icon bg-slate-100 text-slate-600 mb-3">&#8986;</div>
+            <h3 class="font-bold text-slate-900 mb-1">Weekly Withdrawals</h3>
+            <p class="text-sm text-slate-500">Access your savings weekly with flexible withdrawal options directly to M-Pesa.</p>
+        </div>
+        <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div class="stat-icon bg-brand-700/10 text-brand-700 mb-3">&#129309;</div>
+            <h3 class="font-bold text-slate-900 mb-1">Community First</h3>
+            <p class="text-sm text-slate-500">Join a community of savers building financial prosperity together.</p>
+        </div>
+    </div>
+</section>
+
+<section class="max-w-4xl mx-auto px-6 py-16">
+    <div class="text-center mb-10">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">How It Works</h2>
+        <p class="text-slate-500">Get started in 4 simple steps</p>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="flex items-start gap-4 bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div class="w-8 h-8 rounded-lg bg-brand-700 text-white flex items-center justify-center font-bold text-sm shrink-0">1</div>
+            <div>
+                <h4 class="font-bold text-slate-900 mb-0.5">Create Account</h4>
+                <p class="text-sm text-slate-500">Sign up and become a member of Ufanisi SACCO.</p>
+            </div>
+        </div>
+        <div class="flex items-start gap-4 bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div class="w-8 h-8 rounded-lg bg-brand-700 text-white flex items-center justify-center font-bold text-sm shrink-0">2</div>
+            <div>
+                <h4 class="font-bold text-slate-900 mb-0.5">Deposit via M-Pesa</h4>
+                <p class="text-sm text-slate-500">Deposit a minimum of KSH 5,000 using M-Pesa.</p>
+            </div>
+        </div>
+        <div class="flex items-start gap-4 bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div class="w-8 h-8 rounded-lg bg-brand-700 text-white flex items-center justify-center font-bold text-sm shrink-0">3</div>
+            <div>
+                <h4 class="font-bold text-slate-900 mb-0.5">Earn Weekly</h4>
+                <p class="text-sm text-slate-500">Get KSH 500 per unit every week automatically.</p>
+            </div>
+        </div>
+        <div class="flex items-start gap-4 bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+            <div class="w-8 h-8 rounded-lg bg-brand-700 text-white flex items-center justify-center font-bold text-sm shrink-0">4</div>
+            <div>
+                <h4 class="font-bold text-slate-900 mb-0.5">Withdraw Anytime</h4>
+                <p class="text-sm text-slate-500">Withdraw your savings and earnings weekly.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-forest-900 text-white">
+    <div class="max-w-3xl mx-auto px-6 py-16 text-center">
+        <h2 class="text-2xl sm:text-3xl font-extrabold mb-3">Ready to Start Saving?</h2>
+        <p class="text-white/70 mb-8">Join {{ sacco_name }} today and start earning KSH 500 weekly on every KSH 5,000 saved.</p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
+            <a href="{{ url_for('auth.register') }}" class="w-full sm:w-auto bg-gold-500 hover:bg-gold-600 text-forest-950 font-semibold rounded-xl px-6 py-3.5 transition">
+                Create Free Account
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="w-full sm:w-auto border border-white/30 hover:bg-white/10 text-white font-semibold rounded-xl px-6 py-3.5 transition">
+                Sign In
+            </a>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-white/60 text-sm">
+            <span>&#10003; M-Pesa Integrated</span>
+            <span>&#10003; Weekly Withdrawals</span>
+            <span>&#10003; Secure Platform</span>
+            <span>&#10003; Regulated SACCO</span>
+        </div>
+    </div>
+</section>
+
+<footer class="bg-forest-950 text-white/50 text-center text-sm py-6">
+    &copy; 2026 {{ sacco_name }}. All rights reserved. &middot; Nairobi, Kenya
+</footer>
+
+{% endblock %}

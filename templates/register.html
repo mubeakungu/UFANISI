@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Join {{ sacco_name }}{% endblock %}
+{% block body %}
+<div class="min-h-screen flex flex-col lg:flex-row">
+    <div class="lg:w-1/2 bg-forest-900 split-pattern relative text-white p-8 sm:p-12 flex flex-col justify-center">
+        <a href="{{ url_for('index') }}" class="inline-flex items-center gap-2 text-white/60 hover:text-white text-sm mb-10 w-fit">&larr; Back to home</a>
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-11 h-11 rounded-xl bg-gold-500 flex items-center justify-center text-forest-950 font-extrabold">U</div>
+            <div>
+                <p class="font-extrabold leading-tight">{{ sacco_name.split(' ')[0] }}</p>
+                <p class="text-white/50 text-xs tracking-wide">{{ (sacco_name.split(' ')[1:] | join(' ')) or 'SACCO' }}</p>
+            </div>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold leading-tight mb-4">Start building your<br>savings today</h1>
+        <p class="text-white/70 mb-8 max-w-md">Sign up in minutes and get a member number instantly.</p>
+        <ul class="space-y-4 text-white/85 text-sm">
+            <li class="flex items-center gap-3"><span class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center">&#128200;</span> Earn KSH 500/week per KSH 5,000 saved</li>
+            <li class="flex items-center gap-3"><span class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center">&#8986;</span> Withdraw your savings weekly</li>
+            <li class="flex items-center gap-3"><span class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center">&#128737;</span> Secure, transparent, and member-owned</li>
+        </ul>
+    </div>
+
+    <div class="lg:w-1/2 flex items-center justify-center p-8 sm:p-12">
+        <div class="w-full max-w-sm">
+            <h2 class="text-2xl font-extrabold text-slate-900 mb-1">Become a Member</h2>
+            <p class="text-slate-500 text-sm mb-6">Join {{ sacco_name }} in a few steps</p>
+
+            <form method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Full Name</label>
+                    <input type="text" name="full_name" class="form-input" value="{{ form.full_name or '' }}" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number (M-Pesa)</label>
+                    <input type="text" name="phone_number" class="form-input" placeholder="07XXXXXXXX" value="{{ form.phone_number or '' }}" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">National ID</label>
+                    <input type="text" name="national_id" class="form-input" value="{{ form.national_id or '' }}">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Email (optional)</label>
+                    <input type="email" name="email" class="form-input" value="{{ form.email or '' }}">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Password</label>
+                    <input type="password" name="password" class="form-input" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Confirm Password</label>
+                    <input type="password" name="confirm_password" class="form-input" required>
+                </div>
+                <button type="submit" class="w-full bg-brand-700 hover:bg-brand-600 text-white font-semibold rounded-xl py-3 transition">
+                    Register
+                </button>
+            </form>
+
+            <p class="text-center text-sm text-slate-500 mt-5">
+                Already a member? <a href="{{ url_for('auth.login') }}" class="text-brand-700 font-semibold hover:underline">Login</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

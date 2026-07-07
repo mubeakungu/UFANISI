@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Request Withdrawal{% endblock %}
+{% block body %}
+<div class="flex flex-col md:flex-row">
+    {% include "_sidebar.html" %}
+    <main class="flex-1 p-6 md:p-10 max-w-lg">
+        <h1 class="text-2xl font-extrabold text-slate-900 mb-1">Request a Savings Withdrawal</h1>
+        <p class="text-slate-500 text-sm mb-6">
+            Current balance: <strong class="text-slate-700">KES {{ "{:,.2f}".format(account.balance) if account else "0.00" }}</strong>.
+            Withdrawal requests need admin approval before payout.
+        </p>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+            <form method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Amount (KES)</label>
+                    <input type="number" min="1" step="0.01" name="amount" class="form-input" required>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Reason (optional)</label>
+                    <input type="text" name="notes" class="form-input" placeholder="e.g. school fees">
+                </div>
+                <button type="submit" class="w-full bg-brand-700 hover:bg-brand-600 text-white font-semibold rounded-xl py-3 transition">
+                    Submit Request
+                </button>
+            </form>
+            <a href="{{ url_for('member.dashboard') }}" class="block text-center text-sm text-slate-500 hover:text-slate-700 mt-4">&larr; Back to my account</a>
+        </div>
+    </main>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+/* Shared visual tokens that go beyond plain Tailwind utilities */
+
+::selection {
+  background: #153e29;
+  color: #fff;
+}
+
+.hero-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.split-pattern {
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,0.06) 0, transparent 40%),
+    radial-gradient(circle at 85% 75%, rgba(255,255,255,0.05) 0, transparent 45%);
+}
+
+.stat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.9rem;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.72);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-link:hover {
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+}
+
+.sidebar-link.active {
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+}
+
+.form-input {
+  width: 100%;
+  border: 1px solid #e2e5e0;
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.95rem;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-input:focus {
+  border-color: #1f7a4d;
+  box-shadow: 0 0 0 3px rgba(31,122,77,0.15);
+}
+
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+table.data-table th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #8b9088;
+  font-weight: 700;
+  padding: 0.6rem 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid #edf0ec;
+}
+
+table.data-table td {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid #f2f4f0;
+  font-size: 0.9rem;
+}
+
+table.data-table tr:last-child td {
+  border-bottom: none;
+}

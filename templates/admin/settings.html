@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block body %}
+<div class="flex flex-col md:flex-row">
+    {% include "_sidebar.html" %}
+    <main class="flex-1 p-6 md:p-10 max-w-3xl">
+        <h1 class="text-2xl font-extrabold text-slate-900 mb-1">Settings</h1>
+        <p class="text-slate-500 text-sm mb-6">Current business rules for {{ sacco_name }}, loaded from your environment configuration.</p>
+
+        <div class="bg-sand-100/70 border border-sand-200 rounded-2xl p-4 text-sm text-slate-600 mb-6 flex items-start gap-3">
+            <span class="text-gold-600">&#9432;</span>
+            <p>These values are read from your <code class="bg-white/70 px-1.5 py-0.5 rounded text-xs">.env</code> file / server environment variables. To change them, update the environment and restart the app.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm mb-6">
+            <div class="p-5 pb-3"><h3 class="font-bold text-slate-900">Savings &amp; Interest</h3></div>
+            <div class="divide-y divide-slate-100">
+                <div class="flex items-center justify-between px-5 py-3">
+                    <span class="text-sm text-slate-600">Minimum deposit</span>
+                    <span class="text-sm font-semibold text-slate-900">KES {{ "{:,}".format(min_deposit) }}</span>
+                </div>
+                <div class="flex items-center justify-between px-5 py-3">
+                    <span class="text-sm text-slate-600">Interest mode</span>
+                    <span class="text-sm font-semibold text-slate-900 capitalize">{{ interest_mode }}</span>
+                </div>
+                <div class="flex items-center justify-between px-5 py-3">
+                    <span class="text-sm text-slate-600">Interest rate / week</span>
+                    <span class="text-sm font-semibold text-slate-900">
+                        {% if interest_mode == 'flat' %}
+                            KES {{ "{:,.2f}".format(interest_flat_amount) }} flat
+                        {% else %}
+                            {{ "{:.2%}".format(interest_rate) }} of balance
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between px-5 py-3">
+                    <span class="text-sm text-slate-600">Minimum balance to earn interest</span>
+                    <span class="text-sm font-semibold text-slate-900">KES {{ "{:,}".format(interest_min_balance) }}</span>
+                </div>
+                <div class="flex items-center justify-between px-5 py-3">
+                    <span class="text-sm text-slate-600">Interest withdrawal cooldown</span>
+                    <span class="text-sm font-semibold text-slate-900">Every {{ interest_withdrawal_cooldown_days }} days</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm mb-6">
+            <div class="p-5 pb-3"><h3 class="font-bold text-slate-900">M-Pesa</h3></div>
+            <div class="divide-y divide-slate-100">
+                <div class="flex items-center justify-between px-5 py-3">
+                    <span class="text-sm text-slate-600">Environment</span>
+                    <span class="badge-pill {{ 'bg-brand-700/10 text-brand-700' if mpesa_env == 'production' else 'bg-gold-500/15 text-gold-600' }} capitalize">{{ mpesa_env }}</span>
+                </div>
+                <div class="flex items-center justify-between px-5 py-3">
+                    <span class="text-sm text-slate-600">Shortcode</span>
+                    <span class="text-sm font-semibold text-slate-900">{{ mpesa_shortcode }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm">
+            <div class="p-5 pb-3"><h3 class="font-bold text-slate-900">Administrator Account</h3></div>
+            <div class="divide-y divide-slate-100">
+                <div class="flex items-center justify-between px-5 py-3">
+                    <span class="text-sm text-slate-600">Admin username</span>
+                    <span class="text-sm font-semibold text-slate-900">{{ admin_username }}</span>
+                </div>
+                <div class="flex items-center justify-between px-5 py-3">
+                    <span class="text-sm text-slate-600">Admin phone</span>
+                    <span class="text-sm font-semibold text-slate-900">{{ admin_phone }}</span>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

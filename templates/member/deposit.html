@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Make a Deposit{% endblock %}
+{% block body %}
+<div class="flex flex-col md:flex-row">
+    {% include "_sidebar.html" %}
+    <main class="flex-1 p-6 md:p-10 max-w-lg">
+        <h1 class="text-2xl font-extrabold text-slate-900 mb-1">Deposit via M-Pesa</h1>
+        <p class="text-slate-500 text-sm mb-6">You'll get an STK push prompt to complete this on your phone.</p>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+            <form method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Amount (KES)</label>
+                    <input type="number" min="{{ min_deposit }}" step="1" name="amount" class="form-input" required>
+                    <p class="text-xs text-slate-400 mt-1">Minimum deposit is KES {{ "{:,}".format(min_deposit) }}.</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">M-Pesa Phone Number</label>
+                    <input type="text" name="phone_number" class="form-input" value="{{ current_user.phone_number }}" placeholder="07XXXXXXXX" required>
+                    <p class="text-xs text-slate-400 mt-1">You'll receive an STK push prompt on this number.</p>
+                </div>
+                <button type="submit" class="w-full bg-brand-700 hover:bg-brand-600 text-white font-semibold rounded-xl py-3 transition">
+                    Send STK Push
+                </button>
+            </form>
+            <a href="{{ url_for('member.dashboard') }}" class="block text-center text-sm text-slate-500 hover:text-slate-700 mt-4">&larr; Back to my account</a>
+        </div>
+    </main>
+</div>
+{% endblock %}

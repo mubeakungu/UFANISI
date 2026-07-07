@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Members{% endblock %}
+{% block body %}
+<div class="flex flex-col md:flex-row">
+    {% include "_sidebar.html" %}
+    <main class="flex-1 p-6 md:p-10">
+        <h1 class="text-2xl font-extrabold text-slate-900 mb-6">All Members</h1>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="data-table w-full">
+                    <thead>
+                        <tr><th>Member No.</th><th>Name</th><th>Phone</th><th>Balance</th><th>Joined</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                    {% for m in members %}
+                        <tr>
+                            <td class="font-semibold text-slate-700">{{ m.member_number }}</td>
+                            <td>{{ m.full_name }}</td>
+                            <td>{{ m.phone_number }}</td>
+                            <td>KES {{ "{:,.2f}".format(m.account.balance) if m.account else "0.00" }}</td>
+                            <td class="text-slate-400">{{ m.created_at.strftime('%d %b %Y') }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.member_detail', user_id=m.id) }}" class="text-brand-700 font-semibold text-sm hover:underline">View</a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="6" class="text-center text-slate-400 py-10">No members registered yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

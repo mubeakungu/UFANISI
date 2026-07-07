@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Transactions{% endblock %}
+{% block body %}
+<div class="flex flex-col md:flex-row">
+    {% include "_sidebar.html" %}
+    <main class="flex-1 p-6 md:p-10">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-extrabold text-slate-900">My Transactions</h1>
+            <a href="{{ url_for('member.dashboard') }}" class="text-sm text-slate-500 hover:text-slate-700">&larr; Back to dashboard</a>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="data-table w-full">
+                    <thead>
+                        <tr><th>Date</th><th>Type</th><th>Channel</th><th>Amount</th><th>Status</th><th>Receipt</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for tx in (pagination.items if pagination else []) %}
+                        <tr>
+                            <td>{{ tx.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+                            <td class="capitalize">{{ tx.tx_type.replace('_', ' ') }}</td>
+                            <td class="capitalize">{{ tx.channel }}</td>
+                            <td>KSH {{ "{:,.2f}".format(tx.amount) }}</td>
+                            <td>
+                                {% if tx.status == 'completed' %}
+                                    <span class="badge-pill bg-brand-700/10 text-brand-700">Completed</span>
+                                {% elif tx.status == 'pending' %}
+                                    <span class="badge-pill bg-gold-500/15 text-gold-600">Pending</span>
+                                {% else %}
+                                    <span class="badge-pill bg-red-100 text-red-600">Failed</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ tx.mpesa_receipt or '-' }}</td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="6" class="text-center text-slate-400 py-10">No transactions yet.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if pagination and pagination.pages > 1 %}
+            <div class="flex items-center justify-between px-5 py-4 border-t border-slate-100">
+                <p class="text-xs text-slate-400">Page {{ pagination.page }} of {{ pagination.pages }}</p>
+                <div class="flex gap-2">
+                    {% if pagination.has_prev %}
+                        <a href="{{ url_for('member.transactions', page=pagination.prev_num) }}" class="text-sm font-semibold text-brand-700 hover:underline">&larr; Newer</a>
+                    {% endif %}
+                    {% if pagination.has_next %}
+                        <a href="{{ url_for('member.transactions', page=pagination.next_num) }}" class="text-sm font-semibold text-brand-700 hover:underline">Older &rarr;</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}
