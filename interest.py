@@ -2,26 +2,18 @@
 Weekly interest accrual.
 
 Design notes (read this before changing the numbers):
-
 - Interest is tracked SEPARATELY from principal, in SavingsAccount.interest_balance.
   Only interest_balance is withdrawable by members, and only once per
   INTEREST_WITHDRAWAL_COOLDOWN_DAYS (default 7 days). Principal savings withdrawals
   go through the admin-approved withdrawal_request flow instead.
-
 - Two modes are supported, controlled by INTEREST_MODE in .env:
-
     "flat"       -> every account with balance >= INTEREST_MIN_BALANCE gets a fixed
                     KES INTEREST_FLAT_AMOUNT credited once per week, regardless of
                     how large the balance is.
-
     "percentage" -> every qualifying account gets balance * INTEREST_RATE credited
                     once per week instead.
-
-  Flat mode is what was asked for by default (KES 500/week once balance >= 5,000).
-  IMPORTANT: flat mode does not scale — see the caveat in the chat response for why
-  this can be financially unsustainable at scale. Percentage mode is the
-  conventional, safer approach for a real sacco.
-
+  Now running in "percentage" mode at INTEREST_RATE = 0.05 (5% of balance/week),
+  set in config.py.
 - This function is idempotent per calendar week: each account's
   last_interest_accrual_date is checked against the current ISO week, so running
   it twice in the same week does nothing on the second run.
