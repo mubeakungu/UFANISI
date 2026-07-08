@@ -21,7 +21,17 @@ def restrict_to_members():
 def dashboard():
     account = current_user.account
     recent_tx = account.transactions[:10] if account else []
-    return render_template("member/dashboard.html", account=account, transactions=recent_tx)
+    return render_template(
+        "member/dashboard.html",
+        account=account,
+        transactions=recent_tx,
+        min_deposit=current_app.config["MIN_DEPOSIT_AMOUNT"],
+        interest_rate=current_app.config["INTEREST_RATE"],
+        weekly_deposit_amount=current_app.config["WEEKLY_DEPOSIT_AMOUNT"],
+        referral_min_count=current_app.config["REFERRAL_MIN_COUNT"],
+        referral_min_deposit=current_app.config["REFERRAL_MIN_DEPOSIT"],
+        referral_bonus_rate=current_app.config["REFERRAL_BONUS_RATE"],
+    )
 
 
 @member_bp.route("/transactions")
