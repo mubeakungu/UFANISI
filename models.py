@@ -1,3 +1,4 @@
+import secrets
 from datetime import datetime
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -22,6 +23,14 @@ class User(UserMixin, db.Model):
     reset_token = db.Column(db.String(100), unique=True, nullable=True)
     reset_token_expiry = db.Column(db.DateTime, nullable=True)
 
+    # --- Referral program ---
+    referral_code = db.Column(db.String(16), unique=True, nullable=True, index=True)
+    referred_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    referral_qualified = db.Column(db.Boolean, default=False)   # this member (as a referee) hit REFERRAL_MIN_DEPOSIT
+    referral_bonus_paid = db.Column(db.Boolean, default=False)  # bonus for referring THIS member has been paid out
+
+    referred_by = db.relationship("User", remote_side=[id], backref="referrals")
+
     account = db.relationship("SavingsAccount", backref="owner", uselist=False,
                                cascade="all, delete-orphan")
 
@@ -35,8 +44,25 @@ class User(UserMixin, db.Model):
     def is_admin(self):
         return self.role == "admin"
 
+    def ensure_referral_code(self):
+        """Generate a unique referral code if this user doesn't have one yet."""
+        if self.referral_code:
+            return self.referral_code
+        base = (self.member_number or "MEM").upper().replace("-", "")
+        for _ in range(10):
+            candidate = f"{base[:6]}{secrets.token_hex(2).upper()}"
+            if not User.query.filter_by(referral_code=candidate).first():
+                self.referral_code = candidate
+                return candidate
+        self.referral_code = secrets.token_hex(6).upper()
+        return self.referral_code
+
+    @property
+    def qualifying_referral_count(self):
+        """Referred members who have hit the minimum deposit (paid or not yet paid)."""
+        return User.query.filter_by(referred_by_id=self.id, referral_qualified=True).count()
+
     def generate_reset_token(self):
-        import secrets
         from datetime import timedelta
         self.reset_token = secrets.token_urlsafe(32)
         self.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
@@ -67,6 +93,12 @@ class SavingsAccount(db.Model):
     interest_balance = db.Column(db.Numeric(12, 2), nullable=False, default=0)
     last_interest_accrual_date = db.Column(db.Date, nullable=True)
     last_interest_withdrawal_at = db.Column(db.DateTime, nullable=True)
+
+    # --- Referral / recurring-deposit tracking ---
+    total_deposited = db.Column(db.Numeric(12, 2), nullable=False, default=0)  # lifetime deposits, never reduced by withdrawals
+    first_deposit_at = db.Column(db.DateTime, nullable=True)
+    next_weekly_deposit_due = db.Column(db.Date, nullable=True)
+
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     transactions = db.relationship("Transaction", backref="account",
@@ -83,10 +115,10 @@ class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     account_id = db.Column(db.Integer, db.ForeignKey("savings_accounts.id"), nullable=False)
     tx_type = db.Column(db.String(30), nullable=False)
-    # deposit | withdrawal | withdrawal_request | interest_accrual | interest_withdrawal
+    # deposit | withdrawal | withdrawal_request | interest_accrual | interest_withdrawal | referral_bonus
     amount = db.Column(db.Numeric(12, 2), nullable=False)
     balance_after = db.Column(db.Numeric(12, 2), nullable=True)
-    channel = db.Column(db.String(20), default="mpesa")  # mpesa | cash | bank
+    channel = db.Column(db.String(20), default="mpesa")  # mpesa | cash | bank | system
     status = db.Column(db.String(20), default="pending")  # pending | completed | failed
     mpesa_receipt = db.Column(db.String(40), nullable=True)
     mpesa_checkout_request_id = db.Column(db.String(60), nullable=True, index=True)
