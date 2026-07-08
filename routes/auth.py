@@ -68,6 +68,12 @@ def register():
     if current_user.is_authenticated:
         return redirect(url_for("member.dashboard"))
 
+    # Referral code can arrive as ?ref=CODE on the initial GET (e.g. a shared link)
+    # or as a hidden form field once the page has been submitted. GET value is passed
+    # to the template so it can render <input type="hidden" name="ref_code" value="...">
+    # and survive the POST.
+    ref_code = (request.values.get("ref") or request.values.get("ref_code") or "").strip().upper()
+
     if request.method == "POST":
         full_name = request.form.get("full_name", "").strip()
         phone_number = request.form.get("phone_number", "").strip()
@@ -86,10 +92,17 @@ def register():
         if national_id and User.query.filter_by(national_id=national_id).first():
             errors.append("An account with this National ID already exists.")
 
+        referrer = None
+        if ref_code:
+            referrer = User.query.filter_by(referral_code=ref_code).first()
+            if not referrer:
+                # Don't block registration over a bad/expired referral code — just drop it.
+                flash("Referral code not recognized — continuing without it.", "warning")
+
         if errors:
             for e in errors:
                 flash(e, "danger")
-            return render_template("register.html", form=request.form)
+            return render_template("register.html", form=request.form, ref_code=ref_code)
 
         user = User(
             member_number=_next_member_number(),
@@ -98,8 +111,10 @@ def register():
             national_id=national_id or None,
             email=email,
             role="member",
+            referred_by_id=referrer.id if referrer else None,
         )
         user.set_password(password)
+        user.ensure_referral_code()
         db.session.add(user)
         db.session.flush()  # get user.id before creating account
 
@@ -110,7 +125,7 @@ def register():
         flash(f"Registration successful. Your member number is {user.member_number}. Please log in.", "success")
         return redirect(url_for("auth.login"))
 
-    return render_template("register.html", form={})
+    return render_template("register.html", form={}, ref_code=ref_code)
 
 
 @auth_bp.route("/logout")
