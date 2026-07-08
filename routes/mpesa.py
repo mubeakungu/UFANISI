@@ -1,6 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from extensions import db
 from models import Transaction, SavingsAccount
+from savings_rules import record_deposit
 import daraja
 
 mpesa_bp = Blueprint("mpesa", __name__, url_prefix="/mpesa")
@@ -27,14 +28,19 @@ def callback():
     if parsed["success"]:
         tx.status = "completed"
         tx.mpesa_receipt = parsed["receipt"]
+
         account = tx.account
-        account.balance = float(account.balance) + float(parsed["amount"] or tx.amount)
+        amount = float(parsed["amount"] or tx.amount)
+        account.balance = float(account.balance) + amount
         tx.balance_after = account.balance
+
+        # Updates total_deposited, rolls the weekly-deposit due date forward, and
+        # pays out any referral bonus this deposit unlocks.
+        record_deposit(current_app, account, amount)
     else:
         tx.status = "failed"
         tx.notes = parsed["result_desc"]
 
     db.session.commit()
-
     # Safaricom expects this exact acknowledgement shape.
     return jsonify({"ResultCode": 0, "ResultDesc": "Accepted"}), 200
