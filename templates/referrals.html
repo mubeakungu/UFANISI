@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Referrals{% endblock %}
+{% block body %}
+<div class="flex flex-col md:flex-row">
+    {% include "member/_sidebar.html" %}
+
+    <main class="flex-1 p-5 md:p-8">
+        <div class="max-w-3xl">
+            <h1 class="text-2xl font-extrabold text-slate-900 mb-1">Referrals</h1>
+            <p class="text-slate-500 text-sm mb-6">
+                Refer {{ min_count }} members who each save at least KES {{ "{:,}".format(min_deposit) }}
+                and earn a {{ (bonus_rate * 100) | round(2) }}% bonus on each of their deposits.
+            </p>
+
+            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm mb-6">
+                <p class="text-sm font-semibold text-slate-700 mb-2">Your referral code</p>
+                <div class="flex items-center gap-2 mb-4">
+                    <input id="ref-code-input" type="text" readonly value="{{ referral_code }}"
+                           class="form-input font-mono tracking-wider bg-slate-50">
+                    <button onclick="copyRefValue('ref-code-input')"
+                            class="shrink-0 bg-forest-900 hover:bg-forest-800 text-white text-sm font-semibold rounded-xl px-4 py-2.5 transition">
+                        Copy
+                    </button>
+                </div>
+
+                <p class="text-sm font-semibold text-slate-700 mb-2">Your referral link</p>
+                <div class="flex items-center gap-2">
+                    <input id="ref-link-input" type="text" readonly value="{{ referral_link }}"
+                           class="form-input text-xs sm:text-sm bg-slate-50">
+                    <button onclick="copyRefValue('ref-link-input')"
+                            class="shrink-0 bg-forest-900 hover:bg-forest-800 text-white text-sm font-semibold rounded-xl px-4 py-2.5 transition">
+                        Copy
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+                    <p class="text-xs text-slate-400 mb-1">Qualifying Referrals</p>
+                    <p class="text-2xl font-extrabold text-slate-900">{{ qualifying_count }} / {{ min_count }}</p>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+                    <p class="text-xs text-slate-400 mb-1">Bonus-Paid Referrals</p>
+                    <p class="text-2xl font-extrabold text-slate-900">{{ paid_count }}</p>
+                </div>
+                <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+                    <p class="text-xs text-slate-400 mb-1">Slots Remaining</p>
+                    <p class="text-2xl font-extrabold text-slate-900">{{ slots_remaining }}</p>
+                </div>
+            </div>
+
+            {% if slots_remaining > 0 %}
+            <div class="bg-sand-100/70 border border-sand-200 rounded-2xl p-4 text-sm text-slate-600 mb-6">
+                Refer {{ slots_remaining }} more member{{ 's' if slots_remaining != 1 else '' }} who each deposit
+                at least KES {{ "{:,}".format(min_deposit) }} to start earning your {{ (bonus_rate * 100) | round(2) }}% bonus.
+            </div>
+            {% else %}
+            <div class="bg-brand-700/10 border border-brand-700/20 rounded-2xl p-4 text-sm text-brand-700 mb-6">
+                You've unlocked the referral bonus! It's paid automatically to your interest balance
+                as each qualifying referral deposits KES {{ "{:,}".format(min_deposit) }} or more.
+            </div>
+            {% endif %}
+
+            <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-100">
+                    <p class="font-bold text-slate-900 text-sm">Your Referred Members</p>
+                </div>
+                {% if referred_users %}
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-slate-400 text-xs border-b border-slate-100">
+                            <th class="px-5 py-3 font-semibold">Name</th>
+                            <th class="px-5 py-3 font-semibold">Member #</th>
+                            <th class="px-5 py-3 font-semibold">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ref in referred_users %}
+                        <tr class="border-b border-slate-50 last:border-0">
+                            <td class="px-5 py-3 text-slate-700">{{ ref.full_name }}</td>
+                            <td class="px-5 py-3 text-slate-500">{{ ref.member_number }}</td>
+                            <td class="px-5 py-3">
+                                {% if ref.referral_bonus_paid %}
+                                    <span class="badge-pill bg-brand-700/10 text-brand-700">Bonus Paid</span>
+                                {% elif ref.referral_qualified %}
+                                    <span class="badge-pill bg-gold-500/15 text-gold-600">Qualified</span>
+                                {% else %}
+                                    <span class="badge-pill bg-slate-100 text-slate-500">Pending Deposit</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="px-5 py-8 text-center text-sm text-slate-400">
+                    You haven't referred anyone yet. Share your link to get started.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+function copyRefValue(inputId) {
+    const input = document.getElementById(inputId);
+    input.select();
+    input.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(input.value).catch(() => document.execCommand('copy'));
+}
+</script>
+{% endblock %}
