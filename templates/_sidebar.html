@@ -10,7 +10,6 @@
             </div>
         </div>
     </div>
-
     <nav class="px-4 pb-4 md:pb-0 space-y-1 md:mt-2 md:flex-1">
         {% if current_user.is_admin %}
             <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link {{ 'active' if request.endpoint == 'admin.dashboard' }}">
@@ -35,12 +34,14 @@
             <a href="{{ url_for('member.withdraw_savings') }}" class="sidebar-link {{ 'active' if request.endpoint == 'member.withdraw_savings' }}">
                 <span>&#8679;</span> Withdraw
             </a>
+            <a href="{{ url_for('member.referrals') }}" class="sidebar-link {{ 'active' if request.endpoint == 'member.referrals' }}">
+                <span>&#129309;</span> Referrals
+            </a>
             <a href="{{ url_for('member.transactions') }}" class="sidebar-link {{ 'active' if request.endpoint == 'member.transactions' }}">
                 <span>&#8635;</span> Transactions
             </a>
         {% endif %}
     </nav>
-
     <div class="p-4 border-t border-white/10 mt-auto">
         <div class="flex items-center gap-3 px-2 py-2">
             <div class="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-white text-xs font-bold">
