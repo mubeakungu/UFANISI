@@ -41,6 +41,41 @@ def transactions():
     return render_template("member/transactions.html", account=account, pagination=pagination)
 
 
+@member_bp.route("/referrals")
+def referrals():
+    account = current_user.account
+
+    # Older accounts created before the referral program existed may not have a code yet.
+    if not current_user.referral_code:
+        current_user.ensure_referral_code()
+        db.session.commit()
+
+    referred_users = current_user.referrals  # backref from User.referred_by
+    referral_link = url_for("auth.register", ref=current_user.referral_code, _external=True)
+
+    min_deposit = current_app.config["REFERRAL_MIN_DEPOSIT"]
+    min_count = current_app.config["REFERRAL_MIN_COUNT"]
+    bonus_rate = current_app.config["REFERRAL_BONUS_RATE"]
+
+    qualifying_count = current_user.qualifying_referral_count
+    paid_count = sum(1 for r in referred_users if r.referral_bonus_paid)
+    slots_remaining = max(0, min_count - qualifying_count)
+
+    return render_template(
+        "member/referrals.html",
+        account=account,
+        referred_users=referred_users,
+        referral_code=current_user.referral_code,
+        referral_link=referral_link,
+        min_deposit=min_deposit,
+        min_count=min_count,
+        bonus_rate=bonus_rate,
+        qualifying_count=qualifying_count,
+        paid_count=paid_count,
+        slots_remaining=slots_remaining,
+    )
+
+
 @member_bp.route("/deposit", methods=["GET", "POST"])
 def deposit():
     if request.method == "POST":
