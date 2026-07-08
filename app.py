@@ -1,15 +1,25 @@
 from flask import Flask, redirect, url_for, render_template
 from flask_login import current_user
-
 from config import Config
 from extensions import db, login_manager
 from models import User
 
 
+def _to_whatsapp_format(phone: str) -> str:
+    """Convert a local Kenyan number (07... / 01...) to wa.me format (2547.../2541...)."""
+    if not phone:
+        return ""
+    digits = "".join(ch for ch in phone if ch.isdigit())
+    if digits.startswith("0"):
+        return "254" + digits[1:]
+    if digits.startswith("254"):
+        return digits
+    return digits
+
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
-
     db.init_app(app)
     login_manager.init_app(app)
 
@@ -21,11 +31,13 @@ def create_app():
     from routes.admin import admin_bp
     from routes.member import member_bp
     from routes.mpesa import mpesa_bp
+    from routes.assistant import assistant_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(member_bp)
     app.register_blueprint(mpesa_bp)
+    app.register_blueprint(assistant_bp)
 
     @app.route("/")
     def index():
@@ -35,14 +47,16 @@ def create_app():
 
     @app.context_processor
     def inject_globals():
-        return {"sacco_name": app.config["SACCO_NAME"]}
+        return {
+            "sacco_name": app.config["SACCO_NAME"],
+            "whatsapp_number": _to_whatsapp_format(app.config["ADMIN_PHONE"]),
+        }
 
     with app.app_context():
         db.create_all()
         _ensure_default_admin(app)
 
     _register_cli_commands(app)
-
     return app
 
 
