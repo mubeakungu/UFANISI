@@ -41,7 +41,6 @@
     {% block head %}{% endblock %}
 </head>
 <body class="font-sans bg-[#f7f8f6] text-slate-900 antialiased">
-
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
         <div class="fixed top-4 right-4 z-50 w-full max-w-sm space-y-2">
@@ -61,8 +60,116 @@
         </div>
     {% endif %}
 {% endwith %}
-
 {% block body %}{% endblock %}
+
+<!-- Floating WhatsApp + UfanisiAssist widgets -->
+<div class="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+
+    <!-- UfanisiAssist chat panel -->
+    <div id="ufanisi-assist-panel" class="hidden w-[22rem] max-w-[90vw] h-[28rem] max-h-[75vh] bg-white rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden">
+        <div class="bg-forest-900 text-white px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-gold-500 flex items-center justify-center text-forest-950 font-extrabold text-sm">U</div>
+                <div>
+                    <p class="font-bold text-sm leading-tight">UfanisiAssist</p>
+                    <p class="text-white/60 text-xs leading-tight">Ask me anything about your savings</p>
+                </div>
+            </div>
+            <button onclick="toggleUfanisiAssist(false)" class="text-white/70 hover:text-white text-xl leading-none">&times;</button>
+        </div>
+        <div id="ufanisi-assist-messages" class="flex-1 overflow-y-auto px-4 py-3 space-y-3 text-sm bg-[#f7f8f6]">
+            <div class="bg-white border border-slate-200 rounded-xl rounded-tl-sm px-3 py-2 max-w-[85%] shadow-sm">
+                Hi! I'm UfanisiAssist. Ask me about deposits, interest, withdrawals, or referrals.
+            </div>
+        </div>
+        <form id="ufanisi-assist-form" class="border-t border-slate-200 p-2 flex gap-2 bg-white">
+            <input id="ufanisi-assist-input" type="text" autocomplete="off" placeholder="Type a message..."
+                   class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-600">
+            <button type="submit" class="bg-brand-700 hover:bg-brand-600 text-white text-sm font-semibold rounded-lg px-3">Send</button>
+        </form>
+    </div>
+
+    <div class="flex flex-col gap-3">
+        <!-- WhatsApp button -->
+        <a href="https://wa.me/{{ whatsapp_number }}?text={{ 'Hi, I need help with my ' ~ sacco_name ~ ' account.' | urlencode }}"
+           target="_blank" rel="noopener"
+           title="Chat with us on WhatsApp"
+           class="w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#1ebe5b] shadow-lg flex items-center justify-center transition">
+            <svg viewBox="0 0 32 32" class="w-7 h-7 fill-white"><path d="M16.004 3.2c-7.07 0-12.8 5.73-12.8 12.8 0 2.26.6 4.38 1.65 6.21L3.2 28.8l6.77-1.62a12.74 12.74 0 0 0 6.03 1.53h.01c7.07 0 12.8-5.73 12.8-12.8s-5.73-12.8-12.8-12.8Zm0 23.13h-.01a10.3 10.3 0 0 1-5.25-1.44l-.38-.22-4.02.96.96-3.92-.25-.4a10.3 10.3 0 0 1-1.58-5.5c0-5.7 4.63-10.33 10.33-10.33 2.76 0 5.35 1.08 7.3 3.03a10.25 10.25 0 0 1 3.03 7.3c0 5.7-4.63 10.33-10.33 10.33Zm5.66-7.74c-.31-.16-1.83-.9-2.11-1-.28-.1-.49-.16-.7.16-.2.31-.8 1-.98 1.2-.18.21-.36.23-.67.08-.31-.16-1.3-.48-2.48-1.53-.92-.82-1.54-1.83-1.72-2.14-.18-.31-.02-.48.14-.63.14-.14.31-.36.47-.55.16-.18.21-.31.31-.52.1-.21.05-.39-.02-.55-.08-.16-.7-1.7-.96-2.32-.25-.6-.5-.52-.7-.53h-.6c-.2 0-.55.08-.83.39-.28.31-1.09 1.06-1.09 2.6 0 1.53 1.12 3 1.27 3.21.16.21 2.2 3.36 5.33 4.71.75.32 1.33.51 1.78.66.75.24 1.43.2 1.97.13.6-.09 1.83-.75 2.09-1.47.26-.73.26-1.35.18-1.48-.08-.13-.28-.21-.59-.36Z"/></svg>
+        </a>
+
+        <!-- UfanisiAssist toggle button -->
+        <button onclick="toggleUfanisiAssist()"
+                title="Chat with UfanisiAssist"
+                class="w-14 h-14 rounded-full bg-forest-900 hover:bg-forest-800 shadow-lg flex items-center justify-center transition text-gold-500 font-extrabold text-lg">
+            U
+        </button>
+    </div>
+</div>
+
+<script>
+(function () {
+    const panel = document.getElementById('ufanisi-assist-panel');
+    const messagesEl = document.getElementById('ufanisi-assist-messages');
+    const form = document.getElementById('ufanisi-assist-form');
+    const input = document.getElementById('ufanisi-assist-input');
+    let history = [];
+    let sending = false;
+
+    window.toggleUfanisiAssist = function (forceOpen) {
+        const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : panel.classList.contains('hidden');
+        panel.classList.toggle('hidden', !shouldOpen);
+        if (shouldOpen) input.focus();
+    };
+
+    function addBubble(text, role) {
+        const wrap = document.createElement('div');
+        if (role === 'user') {
+            wrap.className = 'ml-auto bg-brand-700 text-white rounded-xl rounded-tr-sm px-3 py-2 max-w-[85%] shadow-sm';
+        } else {
+            wrap.className = 'bg-white border border-slate-200 rounded-xl rounded-tl-sm px-3 py-2 max-w-[85%] shadow-sm';
+        }
+        wrap.textContent = text;
+        messagesEl.appendChild(wrap);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const message = input.value.trim();
+        if (!message || sending) return;
+
+        addBubble(message, 'user');
+        history.push({ role: 'user', content: message });
+        input.value = '';
+        sending = true;
+
+        const typingEl = document.createElement('div');
+        typingEl.className = 'bg-white border border-slate-200 rounded-xl rounded-tl-sm px-3 py-2 max-w-[85%] shadow-sm text-slate-400';
+        typingEl.textContent = 'Typing...';
+        messagesEl.appendChild(typingEl);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+
+        try {
+            const res = await fetch("{{ url_for('assistant.chat') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: message, history: history.slice(-8) }),
+            });
+            const data = await res.json();
+            typingEl.remove();
+            const reply = data.reply || data.error || "Sorry, something went wrong.";
+            addBubble(reply, 'assistant');
+            history.push({ role: 'assistant', content: reply });
+        } catch (err) {
+            typingEl.remove();
+            addBubble("UfanisiAssist is temporarily unavailable. Please use WhatsApp for help.", 'assistant');
+        } finally {
+            sending = false;
+        }
+    });
+})();
+</script>
 
 {% block scripts %}{% endblock %}
 </body>
