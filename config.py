@@ -54,11 +54,11 @@ class Config:
     WEEKLY_DEPOSIT_AMOUNT = int(os.environ.get("WEEKLY_DEPOSIT_AMOUNT", "1000"))
 
     # Loan / benefit qualification: a member becomes "qualified" once they have
-    # saved at least QUALIFICATION_SAVINGS_MULTIPLIER x MIN_DEPOSIT_AMOUNT,
-    # referred at least QUALIFICATION_MIN_REFERRALS people, and have been a
-    # member for at least QUALIFICATION_MIN_MEMBERSHIP_MONTHS months.
-    QUALIFICATION_SAVINGS_MULTIPLIER = int(os.environ.get("QUALIFICATION_SAVINGS_MULTIPLIER", "3"))
-    QUALIFICATION_MIN_REFERRALS = int(os.environ.get("QUALIFICATION_MIN_REFERRALS", "5"))
+    # saved at least QUALIFICATION_MIN_SAVINGS, referred at least
+    # QUALIFICATION_MIN_REFERRALS people, and have been a member for at least
+    # QUALIFICATION_MIN_MEMBERSHIP_MONTHS months.
+    QUALIFICATION_MIN_SAVINGS = int(os.environ.get("QUALIFICATION_MIN_SAVINGS", "10000"))
+    QUALIFICATION_MIN_REFERRALS = int(os.environ.get("QUALIFICATION_MIN_REFERRALS", "10"))
     QUALIFICATION_MIN_MEMBERSHIP_MONTHS = int(os.environ.get("QUALIFICATION_MIN_MEMBERSHIP_MONTHS", "6"))
 
     # Password reset emails (optional — if left blank, reset links are logged to console
