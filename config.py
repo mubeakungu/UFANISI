@@ -12,9 +12,12 @@ class Config:
     MPESA_ENV = os.environ.get("MPESA_ENV", "sandbox")
     MPESA_CONSUMER_KEY = os.environ.get("MPESA_CONSUMER_KEY", "")
     MPESA_CONSUMER_SECRET = os.environ.get("MPESA_CONSUMER_SECRET", "")
-    MPESA_SHORTCODE = os.environ.get("MPESA_SHORTCODE", "174379")
+    MPESA_SHORTCODE = os.environ.get("MPESA_SHORTCODE", "6892410")
     MPESA_PASSKEY = os.environ.get("MPESA_PASSKEY", "")
     MPESA_CALLBACK_URL = os.environ.get("MPESA_CALLBACK_URL", "")
+    # "CustomerBuyGoodsOnline" for a Till number, "CustomerPayBillOnline" for a Paybill.
+    # Ufanisi deposits via till 6892410, so Buy Goods is the default here.
+    MPESA_TRANSACTION_TYPE = os.environ.get("MPESA_TRANSACTION_TYPE", "CustomerBuyGoodsOnline")
     SACCO_NAME = os.environ.get("SACCO_NAME", "Ufanisi Sacco")
     # Default admin bootstrap (used only if no admin exists yet)
     ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "ADMIN")
