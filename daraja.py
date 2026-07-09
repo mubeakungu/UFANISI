@@ -45,11 +45,19 @@ def normalize_phone(phone: str) -> str:
 def stk_push(phone_number: str, amount: int, account_reference: str, description: str = "Sacco Deposit"):
     """
     Initiate an STK Push (Lipa Na M-Pesa Online) request to the member's phone.
+
+    TransactionType depends on whether MPESA_SHORTCODE is a Paybill or a Till (Buy Goods):
+      - Paybill  -> "CustomerPayBillOnline"
+      - Till     -> "CustomerBuyGoodsOnline"
+    Controlled by MPESA_TRANSACTION_TYPE in config (defaults to Buy Goods, since Ufanisi
+    now deposits via till number 6892410).
+
     Returns the parsed JSON response from Daraja, which includes CheckoutRequestID.
     """
     access_token = get_access_token()
     password, timestamp = _password_and_timestamp()
     shortcode = current_app.config["MPESA_SHORTCODE"]
+    transaction_type = current_app.config["MPESA_TRANSACTION_TYPE"]
     callback_url = current_app.config["MPESA_CALLBACK_URL"]
     phone = normalize_phone(phone_number)
 
@@ -57,7 +65,7 @@ def stk_push(phone_number: str, amount: int, account_reference: str, description
         "BusinessShortCode": shortcode,
         "Password": password,
         "Timestamp": timestamp,
-        "TransactionType": "CustomerPayBillOnline",
+        "TransactionType": transaction_type,
         "Amount": int(amount),
         "PartyA": phone,
         "PartyB": shortcode,
@@ -66,7 +74,6 @@ def stk_push(phone_number: str, amount: int, account_reference: str, description
         "AccountReference": account_reference[:20],
         "TransactionDesc": description[:20],
     }
-
     headers = {"Authorization": f"Bearer {access_token}", "Content-Type": "application/json"}
     url = f"{_base_url()}/mpesa/stkpush/v1/processrequest"
     resp = requests.post(url, json=payload, headers=headers, timeout=15)
