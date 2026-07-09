@@ -1,13 +1,18 @@
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
+
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-me")
     SQLALCHEMY_DATABASE_URI = os.environ.get(
         "DATABASE_URL", f"sqlite:///{os.path.join(basedir, 'ufanisi_sacco.db')}"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
     # Daraja / M-Pesa
     MPESA_ENV = os.environ.get("MPESA_ENV", "sandbox")
     MPESA_CONSUMER_KEY = os.environ.get("MPESA_CONSUMER_KEY", "")
@@ -18,7 +23,9 @@ class Config:
     # "CustomerBuyGoodsOnline" for a Till number, "CustomerPayBillOnline" for a Paybill.
     # Ufanisi deposits via till 6892410, so Buy Goods is the default here.
     MPESA_TRANSACTION_TYPE = os.environ.get("MPESA_TRANSACTION_TYPE", "CustomerBuyGoodsOnline")
+
     SACCO_NAME = os.environ.get("SACCO_NAME", "Ufanisi Sacco")
+
     # Default admin bootstrap (used only if no admin exists yet)
     ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "ADMIN_UFANISI")
     ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Admin@123")
@@ -26,6 +33,7 @@ class Config:
 
     # Business rules
     MIN_DEPOSIT_AMOUNT = int(os.environ.get("MIN_DEPOSIT_AMOUNT", "3000"))
+
     # Interest: "flat" credits INTEREST_FLAT_AMOUNT to every account with balance >=
     # MIN_DEPOSIT_AMOUNT once per week. "percentage" credits balance * INTEREST_RATE instead.
     INTEREST_MODE = os.environ.get("INTEREST_MODE", "percentage")  # flat | percentage
@@ -45,6 +53,14 @@ class Config:
     # least WEEKLY_DEPOSIT_AMOUNT every 7 days. Used for arrears flagging on dashboards.
     WEEKLY_DEPOSIT_AMOUNT = int(os.environ.get("WEEKLY_DEPOSIT_AMOUNT", "1000"))
 
+    # Loan / benefit qualification: a member becomes "qualified" once they have
+    # saved at least QUALIFICATION_SAVINGS_MULTIPLIER x MIN_DEPOSIT_AMOUNT,
+    # referred at least QUALIFICATION_MIN_REFERRALS people, and have been a
+    # member for at least QUALIFICATION_MIN_MEMBERSHIP_MONTHS months.
+    QUALIFICATION_SAVINGS_MULTIPLIER = int(os.environ.get("QUALIFICATION_SAVINGS_MULTIPLIER", "3"))
+    QUALIFICATION_MIN_REFERRALS = int(os.environ.get("QUALIFICATION_MIN_REFERRALS", "5"))
+    QUALIFICATION_MIN_MEMBERSHIP_MONTHS = int(os.environ.get("QUALIFICATION_MIN_MEMBERSHIP_MONTHS", "6"))
+
     # Password reset emails (optional — if left blank, reset links are logged to console
     # instead of emailed, so the app still works without SMTP configured)
     MAIL_SERVER = os.environ.get("MAIL_SERVER", "")
@@ -53,6 +69,7 @@ class Config:
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
     MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "true").lower() == "true"
     MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER", "no-reply@ufanisisacco.example")
+
     APP_BASE_URL = os.environ.get("APP_BASE_URL", "http://localhost:5000")
 
     @property
