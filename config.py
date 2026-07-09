@@ -20,9 +20,9 @@ class Config:
     MPESA_TRANSACTION_TYPE = os.environ.get("MPESA_TRANSACTION_TYPE", "CustomerBuyGoodsOnline")
     SACCO_NAME = os.environ.get("SACCO_NAME", "Ufanisi Sacco")
     # Default admin bootstrap (used only if no admin exists yet)
-    ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "ADMIN")
-    ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Admin123")
-    ADMIN_PHONE = os.environ.get("ADMIN_PHONE", "0787187393")
+    ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "ADMIN_UFANISI")
+    ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Admin@123")
+    ADMIN_PHONE = os.environ.get("ADMIN_PHONE", "0757979633")
 
     # Business rules
     MIN_DEPOSIT_AMOUNT = int(os.environ.get("MIN_DEPOSIT_AMOUNT", "3000"))
@@ -37,7 +37,7 @@ class Config:
     # Referral program: once a member has REFERRAL_MIN_COUNT referred members who have each
     # deposited >= REFERRAL_MIN_DEPOSIT, the referrer earns REFERRAL_BONUS_RATE of each
     # qualifying referred member's total deposit, credited to the referrer's interest_balance.
-    REFERRAL_MIN_COUNT = int(os.environ.get("REFERRAL_MIN_COUNT", "10"))
+    REFERRAL_MIN_COUNT = int(os.environ.get("REFERRAL_MIN_COUNT", "1"))
     REFERRAL_MIN_DEPOSIT = int(os.environ.get("REFERRAL_MIN_DEPOSIT", "10000"))
     REFERRAL_BONUS_RATE = float(os.environ.get("REFERRAL_BONUS_RATE", "0.025"))
 
