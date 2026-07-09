@@ -1,113 +1,145 @@
 {% extends "base.html" %}
-{% block title %}Referrals{% endblock %}
+{% block title %}Dashboard{% endblock %}
 {% block body %}
 <div class="flex flex-col md:flex-row">
     {% include "_sidebar.html" %}
 
-    <main class="flex-1 p-5 md:p-8">
-        <div class="max-w-3xl">
-            <h1 class="text-2xl font-extrabold text-slate-900 mb-1">Referrals</h1>
-            <p class="text-slate-500 text-sm mb-6">
-                Refer {{ min_count }} members who each save at least KES {{ "{:,}".format(min_deposit) }}
-                and earn a {{ (bonus_rate * 100) | round(2) }}% bonus on each of their deposits.
+    <main class="flex-1 p-6 md:p-10 max-w-5xl">
+        <div class="mb-8">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900">Welcome back, {{ current_user.full_name.split(' ')[0] }} <span class="align-middle">&#128075;</span></h1>
+            <p class="text-slate-500 mt-1 text-sm">
+                Member #{{ current_user.member_number }} &middot;
+                <span class="badge-pill bg-brand-700/10 text-brand-700">{{ "active" if current_user.is_active_member else "inactive" }}</span>
             </p>
+        </div>
 
-            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm mb-6">
-                <p class="text-sm font-semibold text-slate-700 mb-2">Your referral code</p>
-                <div class="flex items-center gap-2 mb-4">
-                    <input id="ref-code-input" type="text" readonly value="{{ referral_code }}"
-                           class="form-input font-mono tracking-wider bg-slate-50">
-                    <button onclick="copyRefValue('ref-code-input')"
-                            class="shrink-0 bg-forest-900 hover:bg-forest-800 text-white text-sm font-semibold rounded-xl px-4 py-2.5 transition">
-                        Copy
-                    </button>
-                </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                <div class="stat-icon bg-brand-700/10 text-brand-700 mb-3">&#128179;</div>
+                <p class="text-slate-500 text-sm">Total Balance</p>
+                <p class="text-2xl font-extrabold text-slate-900 mt-0.5">KSH {{ "{:,.0f}".format(account.balance) if account else "0" }}</p>
+                <p class="text-slate-400 text-xs mt-1">Current savings balance</p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                <div class="stat-icon bg-gold-500/15 text-gold-600 mb-3">&#128200;</div>
+                <p class="text-slate-500 text-sm">Weekly Earning</p>
+                <p class="text-2xl font-extrabold text-slate-900 mt-0.5">
+                    KSH {{ "{:,.0f}".format((account.balance|float) * interest_rate) if account else "0" }}
+                </p>
+                <p class="text-slate-400 text-xs mt-1">
+                    {{ (interest_rate * 100) | round(2) }}% of your balance
+                </p>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+                <div class="stat-icon bg-slate-100 text-slate-600 mb-3">&#8986;</div>
+                <p class="text-slate-500 text-sm">Total Earned</p>
+                <p class="text-2xl font-extrabold text-slate-900 mt-0.5">KSH {{ "{:,.0f}".format(account.interest_balance) if account else "0" }}</p>
+                <p class="text-slate-400 text-xs mt-1">All-time interest earned</p>
+            </div>
+        </div>
 
-                <p class="text-sm font-semibold text-slate-700 mb-2">Your referral link</p>
-                <div class="flex items-center gap-2">
-                    <input id="ref-link-input" type="text" readonly value="{{ referral_link }}"
-                           class="form-input text-xs sm:text-sm bg-slate-50">
-                    <button onclick="copyRefValue('ref-link-input')"
-                            class="shrink-0 bg-forest-900 hover:bg-forest-800 text-white text-sm font-semibold rounded-xl px-4 py-2.5 transition">
-                        Copy
-                    </button>
-                </div>
-            </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <a href="{{ url_for('member.deposit') }}" class="flex items-center justify-center gap-2 bg-brand-700 hover:bg-brand-600 text-white font-semibold rounded-2xl py-3.5 transition">
+                <span>&#8681;</span> Deposit
+            </a>
+            <a href="{{ url_for('member.withdraw_savings') }}" class="flex items-center justify-center gap-2 bg-sand-100 hover:bg-sand-200 text-forest-900 font-semibold rounded-2xl py-3.5 transition">
+                <span>&#8679;</span> Withdraw
+            </a>
+        </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-                    <p class="text-xs text-slate-400 mb-1">Qualifying Referrals</p>
-                    <p class="text-2xl font-extrabold text-slate-900">{{ qualifying_count }} / {{ min_count }}</p>
-                </div>
-                <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-                    <p class="text-xs text-slate-400 mb-1">Bonus-Paid Referrals</p>
-                    <p class="text-2xl font-extrabold text-slate-900">{{ paid_count }}</p>
-                </div>
-                <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-                    <p class="text-xs text-slate-400 mb-1">Slots Remaining</p>
-                    <p class="text-2xl font-extrabold text-slate-900">{{ slots_remaining }}</p>
-                </div>
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-6">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="font-bold text-slate-900">Loan Qualification</h3>
+                {% if current_user.is_loan_qualified %}
+                    <span class="badge-pill bg-brand-700/10 text-brand-700">&#9989; Qualified</span>
+                {% else %}
+                    <span class="badge-pill bg-gold-500/15 text-gold-600">In Progress</span>
+                {% endif %}
             </div>
-
-            {% if slots_remaining > 0 %}
-            <div class="bg-sand-100/70 border border-sand-200 rounded-2xl p-4 text-sm text-slate-600 mb-6">
-                Refer {{ slots_remaining }} more member{{ 's' if slots_remaining != 1 else '' }} who each deposit
-                at least KES {{ "{:,}".format(min_deposit) }} to start earning your {{ (bonus_rate * 100) | round(2) }}% bonus.
-            </div>
-            {% else %}
-            <div class="bg-brand-700/10 border border-brand-700/20 rounded-2xl p-4 text-sm text-brand-700 mb-6">
-                You've unlocked the referral bonus! It's paid automatically to your interest balance
-                as each qualifying referral deposits KES {{ "{:,}".format(min_deposit) }} or more.
-            </div>
+            <ul class="text-sm text-slate-700 space-y-2">
+                <li class="flex items-center gap-2">
+                    {% if current_user.has_qualifying_savings %}
+                        <span class="text-brand-700">&#9989;</span>
+                    {% else %}
+                        <span class="text-slate-300">&#9675;</span>
+                    {% endif %}
+                    Save at least KSH {{ "{:,.0f}".format(current_user.savings_qualification_target) }}
+                    <span class="text-slate-400">
+                        (so far: KSH {{ "{:,.0f}".format(account.total_deposited) if account else "0" }})
+                    </span>
+                </li>
+                <li class="flex items-center gap-2">
+                    {% if current_user.has_qualifying_referrals %}
+                        <span class="text-brand-700">&#9989;</span>
+                    {% else %}
+                        <span class="text-slate-300">&#9675;</span>
+                    {% endif %}
+                    Refer at least {{ qualification_min_referrals if qualification_min_referrals is defined else 10 }} qualifying members
+                    <span class="text-slate-400">(so far: {{ current_user.qualifying_referral_count }})</span>
+                </li>
+                <li class="flex items-center gap-2">
+                    {% if current_user.has_qualifying_tenure %}
+                        <span class="text-brand-700">&#9989;</span>
+                    {% else %}
+                        <span class="text-slate-300">&#9675;</span>
+                    {% endif %}
+                    Be a member for at least {{ qualification_min_months if qualification_min_months is defined else 6 }} months
+                    <span class="text-slate-400">(so far: {{ current_user.membership_months }})</span>
+                </li>
+            </ul>
+            {% if not current_user.is_loan_qualified %}
+                <p class="text-xs text-slate-400 mt-3">Meet all three to unlock loan eligibility.</p>
             {% endif %}
+        </div>
 
-            <div class="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
-                <div class="px-5 py-4 border-b border-slate-100">
-                    <p class="font-bold text-slate-900 text-sm">Your Referred Members</p>
-                </div>
-                {% if referred_users %}
-                <table class="w-full text-sm">
+        <div class="bg-sand-100/70 border border-sand-200 rounded-2xl p-5 mb-6">
+            <h3 class="font-bold text-slate-900 mb-2">How Your Savings Work</h3>
+            <ul class="text-sm text-slate-700 space-y-1.5">
+                <li>&bull; Minimum deposit: <strong>KSH {{ "{:,}".format(min_deposit) if min_deposit is defined else "3,000" }}</strong></li>
+                <li>&bull; Weekly interest: <strong>{{ (interest_rate * 100) | round(2) if interest_rate is defined else 5 }}%</strong> of your savings balance, credited automatically every week</li>
+                <li>&bull; Keep saving at least <strong>KSH {{ "{:,}".format(weekly_deposit_amount) if weekly_deposit_amount is defined else "1,000" }}</strong> every week after your first deposit</li>
+                <li>&bull; Refer <strong>{{ referral_min_count if referral_min_count is defined else 1 }} members</strong> who each deposit KSH {{ "{:,}".format(referral_min_deposit) if referral_min_deposit is defined else "10,000" }}+ to earn a <strong>{{ (referral_bonus_rate * 100) | round(2) if referral_bonus_rate is defined else 2.5 }}%</strong> bonus &mdash; see <a href="{{ url_for('member.referrals') }}" class="text-brand-700 font-semibold hover:underline">Referrals</a></li>
+                <li>&bull; You're currently earning <strong>KSH {{ "{:,.0f}".format((account.balance|float) * interest_rate) if account and interest_rate is defined else "0" }}/week</strong> in interest</li>
+                <li>&bull; Interest is withdrawable weekly; savings withdrawals go through admin approval</li>
+                <li>&bull; Loan eligibility: save at least <strong>KSH 10,000</strong>, refer <strong>10 members</strong>, and stay a member for <strong>6 months</strong></li>
+            </ul>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm">
+            <div class="flex items-center justify-between p-5 pb-3">
+                <h3 class="font-bold text-slate-900">Recent Transactions</h3>
+                <a href="{{ url_for('member.transactions') }}" class="text-sm text-brand-700 font-semibold hover:underline">View all</a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="data-table w-full">
                     <thead>
-                        <tr class="text-left text-slate-400 text-xs border-b border-slate-100">
-                            <th class="px-5 py-3 font-semibold">Name</th>
-                            <th class="px-5 py-3 font-semibold">Member #</th>
-                            <th class="px-5 py-3 font-semibold">Status</th>
-                        </tr>
+                        <tr><th>Date</th><th>Type</th><th>Channel</th><th>Amount</th><th>Status</th><th>Receipt</th></tr>
                     </thead>
                     <tbody>
-                        {% for ref in referred_users %}
-                        <tr class="border-b border-slate-50 last:border-0">
-                            <td class="px-5 py-3 text-slate-700">{{ ref.full_name }}</td>
-                            <td class="px-5 py-3 text-slate-500">{{ ref.member_number }}</td>
-                            <td class="px-5 py-3">
-                                {% if ref.referral_bonus_paid %}
-                                    <span class="badge-pill bg-brand-700/10 text-brand-700">Bonus Paid</span>
-                                {% elif ref.referral_qualified %}
-                                    <span class="badge-pill bg-gold-500/15 text-gold-600">Qualified</span>
+                    {% for tx in transactions %}
+                        <tr>
+                            <td>{{ tx.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+                            <td class="capitalize">{{ tx.tx_type.replace('_', ' ') }}</td>
+                            <td class="capitalize">{{ tx.channel }}</td>
+                            <td>KSH {{ "{:,.2f}".format(tx.amount) }}</td>
+                            <td>
+                                {% if tx.status == 'completed' %}
+                                    <span class="badge-pill bg-brand-700/10 text-brand-700">Completed</span>
+                                {% elif tx.status == 'pending' %}
+                                    <span class="badge-pill bg-gold-500/15 text-gold-600">Pending</span>
                                 {% else %}
-                                    <span class="badge-pill bg-slate-100 text-slate-500">Pending Deposit</span>
+                                    <span class="badge-pill bg-red-100 text-red-600">Failed</span>
                                 {% endif %}
                             </td>
+                            <td>{{ tx.mpesa_receipt or '-' }}</td>
                         </tr>
-                        {% endfor %}
+                    {% else %}
+                        <tr><td colspan="6" class="text-center text-slate-400 py-8">No transactions yet.</td></tr>
+                    {% endfor %}
                     </tbody>
                 </table>
-                {% else %}
-                <p class="px-5 py-8 text-center text-sm text-slate-400">
-                    You haven't referred anyone yet. Share your link to get started.
-                </p>
-                {% endif %}
             </div>
         </div>
     </main>
 </div>
-
-<script>
-function copyRefValue(inputId) {
-    const input = document.getElementById(inputId);
-    input.select();
-    input.setSelectionRange(0, 99999);
-    navigator.clipboard.writeText(input.value).catch(() => document.execCommand('copy'));
-}
-</script>
 {% endblock %}
