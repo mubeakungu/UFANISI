@@ -75,7 +75,7 @@ class User(UserMixin, db.Model):
     @property
     def savings_qualification_target(self):
         """KES amount a member must have saved (lifetime deposits) to qualify."""
-        return current_app.config["MIN_DEPOSIT_AMOUNT"] * current_app.config["QUALIFICATION_SAVINGS_MULTIPLIER"]
+        return current_app.config["QUALIFICATION_MIN_SAVINGS"]
 
     @property
     def has_qualifying_savings(self):
