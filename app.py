@@ -49,7 +49,7 @@ def create_app():
     def inject_globals():
         return {
             "sacco_name": app.config["SACCO_NAME"],
-            "whatsapp_number": _to_whatsapp_format(app.config["0757979633"]),
+            "whatsapp_number": _to_whatsapp_format(app.config["ADMIN_PHONE"]),
         }
 
     with app.app_context():
@@ -66,17 +66,17 @@ def _ensure_default_admin(app):
         return
     admin = User(
         member_number="UFS-ADMIN",
-        username=app.config["ADMIN_UFANISI"],
+        username=app.config["ADMIN_USERNAME"],
         full_name="Sacco Administrator",
-        phone_number=app.config["0757979633"],
+        phone_number=app.config["ADMIN_PHONE"],
         role="admin",
     )
-    admin.set_password(app.config["Admin@123"])
+    admin.set_password(app.config["ADMIN_PASSWORD"])
     db.session.add(admin)
     db.session.commit()
     print(
-        f"Created default admin -> username: {app.config['ADMIN_UFANISI']} / "
-        f"password: {app.config['Admin@123']} (CHANGE THIS via .env or after first login)"
+        f"Created default admin -> username: {app.config['ADMIN_USERNAME']} / "
+        f"password: {app.config['ADMIN_PASSWORD']} (CHANGE THIS via .env or after first login)"
     )
 
 
