@@ -96,7 +96,11 @@ def deposit():
 
         if not amount or not amount.isdigit() or int(amount) < min_deposit:
             flash(f"Minimum deposit is KES {min_deposit:,}.", "danger")
-            return render_template("member/deposit.html", min_deposit=min_deposit)
+            return render_template(
+                "member/deposit.html",
+                min_deposit=min_deposit,
+                weekly_deposit_amount=current_app.config["WEEKLY_DEPOSIT_AMOUNT"],
+            )
 
         account = current_user.account
         tx = Transaction(
@@ -127,7 +131,11 @@ def deposit():
 
         return redirect(url_for("member.dashboard"))
 
-    return render_template("member/deposit.html", min_deposit=current_app.config["MIN_DEPOSIT_AMOUNT"])
+    return render_template(
+        "member/deposit.html",
+        min_deposit=current_app.config["MIN_DEPOSIT_AMOUNT"],
+        weekly_deposit_amount=current_app.config["WEEKLY_DEPOSIT_AMOUNT"],
+    )
 
 
 @member_bp.route("/transaction-status/<int:tx_id>")
@@ -147,6 +155,7 @@ def withdraw_savings():
     money automatically carries more risk than accepting a deposit does.
     """
     account = current_user.account
+    min_deposit = current_app.config["MIN_DEPOSIT_AMOUNT"]
 
     if request.method == "POST":
         amount_raw = request.form.get("amount", "").strip()
@@ -154,12 +163,12 @@ def withdraw_savings():
 
         if not amount_raw.replace(".", "", 1).isdigit() or float(amount_raw) <= 0:
             flash("Enter a valid withdrawal amount.", "danger")
-            return render_template("member/withdraw_savings.html", account=account)
+            return render_template("member/withdraw_savings.html", account=account, min_deposit=min_deposit)
 
         amount = float(amount_raw)
         if amount > float(account.balance):
             flash("You can't withdraw more than your current savings balance.", "danger")
-            return render_template("member/withdraw_savings.html", account=account)
+            return render_template("member/withdraw_savings.html", account=account, min_deposit=min_deposit)
 
         tx = Transaction(
             account_id=account.id,
@@ -179,7 +188,7 @@ def withdraw_savings():
         )
         return redirect(url_for("member.dashboard"))
 
-    return render_template("member/withdraw_savings.html", account=account)
+    return render_template("member/withdraw_savings.html", account=account, min_deposit=min_deposit)
 
 
 @member_bp.route("/withdraw-interest", methods=["POST"])
