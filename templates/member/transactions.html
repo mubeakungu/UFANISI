@@ -8,7 +8,6 @@
             <h1 class="text-2xl font-extrabold text-slate-900">My Transactions</h1>
             <a href="{{ url_for('member.dashboard') }}" class="text-sm text-slate-500 hover:text-slate-700">&larr; Back to dashboard</a>
         </div>
-
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="data-table w-full">
@@ -19,7 +18,21 @@
                     {% for tx in (pagination.items if pagination else []) %}
                         <tr>
                             <td>{{ tx.created_at.strftime('%d %b %Y, %H:%M') }}</td>
-                            <td class="capitalize">{{ tx.tx_type.replace('_', ' ') }}</td>
+                            <td>
+                                {% if tx.tx_type == 'deposit' %}
+                                    <span class="badge-pill bg-brand-700/10 text-brand-700">Deposit</span>
+                                {% elif tx.tx_type in ['withdrawal', 'withdrawal_request'] %}
+                                    <span class="badge-pill bg-slate-100 text-slate-600">Withdrawal</span>
+                                {% elif tx.tx_type == 'interest_accrual' %}
+                                    <span class="badge-pill bg-gold-500/15 text-gold-600">Interest</span>
+                                {% elif tx.tx_type == 'interest_withdrawal' %}
+                                    <span class="badge-pill bg-gold-500/15 text-gold-600">Interest Withdrawal</span>
+                                {% elif tx.tx_type == 'referral_bonus' %}
+                                    <span class="badge-pill bg-purple-100 text-purple-600">Referral Bonus</span>
+                                {% else %}
+                                    <span class="badge-pill bg-slate-100 text-slate-600 capitalize">{{ tx.tx_type.replace('_', ' ') }}</span>
+                                {% endif %}
+                            </td>
                             <td class="capitalize">{{ tx.channel }}</td>
                             <td>KSH {{ "{:,.2f}".format(tx.amount) }}</td>
                             <td>
@@ -39,7 +52,6 @@
                     </tbody>
                 </table>
             </div>
-
             {% if pagination and pagination.pages > 1 %}
             <div class="flex items-center justify-between px-5 py-4 border-t border-slate-100">
                 <p class="text-xs text-slate-400">Page {{ pagination.page }} of {{ pagination.pages }}</p>
