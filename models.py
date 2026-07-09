@@ -1,79 +1,168 @@
-import os
-from dotenv import load_dotenv
+import secrets
+from datetime import datetime, timedelta
+from flask import current_app
+from flask_login import UserMixin
+from werkzeug.security import generate_password_hash, check_password_hash
+from extensions import db
 
-load_dotenv()
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+class User(UserMixin, db.Model):
+    __tablename__ = "users"
 
+    id = db.Column(db.Integer, primary_key=True)
+    member_number = db.Column(db.String(20), unique=True, nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=True)  # primarily used by admins
+    full_name = db.Column(db.String(120), nullable=False)
+    phone_number = db.Column(db.String(15), unique=True, nullable=False)  # 2547XXXXXXXX
+    national_id = db.Column(db.String(20), unique=True, nullable=True)
+    email = db.Column(db.String(120), unique=True, nullable=True)
+    password_hash = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(20), nullable=False, default="member")  # admin | member
+    is_active_member = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-change-me")
-    SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL", f"sqlite:///{os.path.join(basedir, 'ufanisi_sacco.db')}"
-    )
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    reset_token = db.Column(db.String(100), unique=True, nullable=True)
+    reset_token_expiry = db.Column(db.DateTime, nullable=True)
 
-    # Daraja / M-Pesa
-    MPESA_ENV = os.environ.get("MPESA_ENV", "sandbox")
-    MPESA_CONSUMER_KEY = os.environ.get("MPESA_CONSUMER_KEY", "")
-    MPESA_CONSUMER_SECRET = os.environ.get("MPESA_CONSUMER_SECRET", "")
-    MPESA_SHORTCODE = os.environ.get("MPESA_SHORTCODE", "6892410")
-    MPESA_PASSKEY = os.environ.get("MPESA_PASSKEY", "")
-    MPESA_CALLBACK_URL = os.environ.get("MPESA_CALLBACK_URL", "")
-    # "CustomerBuyGoodsOnline" for a Till number, "CustomerPayBillOnline" for a Paybill.
-    # Ufanisi deposits via till 6892410, so Buy Goods is the default here.
-    MPESA_TRANSACTION_TYPE = os.environ.get("MPESA_TRANSACTION_TYPE", "CustomerBuyGoodsOnline")
+    # --- Referral program ---
+    referral_code = db.Column(db.String(16), unique=True, nullable=True, index=True)
+    referred_by_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    referral_qualified = db.Column(db.Boolean, default=False)   # this member (as a referee) hit REFERRAL_MIN_DEPOSIT
+    referral_bonus_paid = db.Column(db.Boolean, default=False)  # bonus for referring THIS member has been paid out
 
-    SACCO_NAME = os.environ.get("SACCO_NAME", "Ufanisi Sacco")
+    referred_by = db.relationship("User", remote_side=[id], backref="referrals")
 
-    # Default admin bootstrap (used only if no admin exists yet)
-    ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "ADMIN_UFANISI")
-    ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Admin@123")
-    ADMIN_PHONE = os.environ.get("ADMIN_PHONE", "0757979633")
+    account = db.relationship("SavingsAccount", backref="owner", uselist=False,
+                               cascade="all, delete-orphan")
 
-    # Business rules
-    MIN_DEPOSIT_AMOUNT = int(os.environ.get("MIN_DEPOSIT_AMOUNT", "3000"))
+    def set_password(self, raw_password):
+        self.password_hash = generate_password_hash(raw_password)
 
-    # Interest: "flat" credits INTEREST_FLAT_AMOUNT to every account with balance >=
-    # MIN_DEPOSIT_AMOUNT once per week. "percentage" credits balance * INTEREST_RATE instead.
-    INTEREST_MODE = os.environ.get("INTEREST_MODE", "percentage")  # flat | percentage
-    INTEREST_FLAT_AMOUNT = float(os.environ.get("INTEREST_FLAT_AMOUNT", "500"))
-    INTEREST_RATE = float(os.environ.get("INTEREST_RATE", "0.05"))  # 5% (of balance) in percentage mode
-    INTEREST_MIN_BALANCE = int(os.environ.get("INTEREST_MIN_BALANCE", str(MIN_DEPOSIT_AMOUNT)))
-    INTEREST_WITHDRAWAL_COOLDOWN_DAYS = int(os.environ.get("INTEREST_WITHDRAWAL_COOLDOWN_DAYS", "7"))
-
-    # Referral program: once a member has REFERRAL_MIN_COUNT referred members who have each
-    # deposited >= REFERRAL_MIN_DEPOSIT, the referrer earns REFERRAL_BONUS_RATE of each
-    # qualifying referred member's total deposit, credited to the referrer's interest_balance.
-    REFERRAL_MIN_COUNT = int(os.environ.get("REFERRAL_MIN_COUNT", "1"))
-    REFERRAL_MIN_DEPOSIT = int(os.environ.get("REFERRAL_MIN_DEPOSIT", "10000"))
-    REFERRAL_BONUS_RATE = float(os.environ.get("REFERRAL_BONUS_RATE", "0.025"))
-
-    # Recurring savings: after a member's first deposit, they're expected to deposit at
-    # least WEEKLY_DEPOSIT_AMOUNT every 7 days. Used for arrears flagging on dashboards.
-    WEEKLY_DEPOSIT_AMOUNT = int(os.environ.get("WEEKLY_DEPOSIT_AMOUNT", "1000"))
-
-    # Loan / benefit qualification: a member becomes "qualified" once they have
-    # saved at least QUALIFICATION_SAVINGS_MULTIPLIER x MIN_DEPOSIT_AMOUNT,
-    # referred at least QUALIFICATION_MIN_REFERRALS people, and have been a
-    # member for at least QUALIFICATION_MIN_MEMBERSHIP_MONTHS months.
-    QUALIFICATION_SAVINGS_MULTIPLIER = int(os.environ.get("QUALIFICATION_SAVINGS_MULTIPLIER", "3"))
-    QUALIFICATION_MIN_REFERRALS = int(os.environ.get("QUALIFICATION_MIN_REFERRALS", "5"))
-    QUALIFICATION_MIN_MEMBERSHIP_MONTHS = int(os.environ.get("QUALIFICATION_MIN_MEMBERSHIP_MONTHS", "6"))
-
-    # Password reset emails (optional — if left blank, reset links are logged to console
-    # instead of emailed, so the app still works without SMTP configured)
-    MAIL_SERVER = os.environ.get("MAIL_SERVER", "")
-    MAIL_PORT = int(os.environ.get("MAIL_PORT", "587"))
-    MAIL_USERNAME = os.environ.get("MAIL_USERNAME", "")
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD", "")
-    MAIL_USE_TLS = os.environ.get("MAIL_USE_TLS", "true").lower() == "true"
-    MAIL_DEFAULT_SENDER = os.environ.get("MAIL_DEFAULT_SENDER", "no-reply@ufanisisacco.example")
-
-    APP_BASE_URL = os.environ.get("APP_BASE_URL", "http://localhost:5000")
+    def check_password(self, raw_password):
+        return check_password_hash(self.password_hash, raw_password)
 
     @property
-    def MPESA_BASE_URL(self):
-        if self.MPESA_ENV == "production":
-            return "https://api.safaricom.co.ke"
-        return "https://sandbox.safaricom.co.ke"
+    def is_admin(self):
+        return self.role == "admin"
+
+    def ensure_referral_code(self):
+        """Generate a unique referral code if this user doesn't have one yet."""
+        if self.referral_code:
+            return self.referral_code
+        base = (self.member_number or "MEM").upper().replace("-", "")
+        for _ in range(10):
+            candidate = f"{base[:6]}{secrets.token_hex(2).upper()}"
+            if not User.query.filter_by(referral_code=candidate).first():
+                self.referral_code = candidate
+                return candidate
+        self.referral_code = secrets.token_hex(6).upper()
+        return self.referral_code
+
+    @property
+    def qualifying_referral_count(self):
+        """Referred members who have hit the minimum deposit (paid or not yet paid)."""
+        return User.query.filter_by(referred_by_id=self.id, referral_qualified=True).count()
+
+    # --- Loan / benefit qualification ---
+    @property
+    def membership_months(self):
+        """How many whole months this member has been registered."""
+        if not self.created_at:
+            return 0
+        delta_days = (datetime.utcnow() - self.created_at).days
+        return delta_days // 30
+
+    @property
+    def savings_qualification_target(self):
+        """KES amount a member must have saved (lifetime deposits) to qualify."""
+        return current_app.config["MIN_DEPOSIT_AMOUNT"] * current_app.config["QUALIFICATION_SAVINGS_MULTIPLIER"]
+
+    @property
+    def has_qualifying_savings(self):
+        total_deposited = self.account.total_deposited if self.account else 0
+        return total_deposited >= self.savings_qualification_target
+
+    @property
+    def has_qualifying_referrals(self):
+        return self.qualifying_referral_count >= current_app.config["QUALIFICATION_MIN_REFERRALS"]
+
+    @property
+    def has_qualifying_tenure(self):
+        return self.membership_months >= current_app.config["QUALIFICATION_MIN_MEMBERSHIP_MONTHS"]
+
+    @property
+    def is_loan_qualified(self):
+        """True once this member has saved >= 3x the minimum deposit, referred
+        enough qualifying members, and has been registered long enough.
+        Thresholds are set in Config (QUALIFICATION_SAVINGS_MULTIPLIER,
+        QUALIFICATION_MIN_REFERRALS, QUALIFICATION_MIN_MEMBERSHIP_MONTHS)."""
+        return (
+            self.has_qualifying_savings
+            and self.has_qualifying_referrals
+            and self.has_qualifying_tenure
+        )
+
+    def generate_reset_token(self):
+        self.reset_token = secrets.token_urlsafe(32)
+        self.reset_token_expiry = datetime.utcnow() + timedelta(hours=1)
+        return self.reset_token
+
+    def clear_reset_token(self):
+        self.reset_token = None
+        self.reset_token_expiry = None
+
+    def reset_token_is_valid(self, token):
+        return (
+            self.reset_token is not None
+            and self.reset_token == token
+            and self.reset_token_expiry is not None
+            and self.reset_token_expiry > datetime.utcnow()
+        )
+
+    def __repr__(self):
+        return f"<User {self.member_number} {self.full_name}>"
+
+
+class SavingsAccount(db.Model):
+    __tablename__ = "savings_accounts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    balance = db.Column(db.Numeric(12, 2), nullable=False, default=0)
+    interest_balance = db.Column(db.Numeric(12, 2), nullable=False, default=0)
+    last_interest_accrual_date = db.Column(db.Date, nullable=True)
+    last_interest_withdrawal_at = db.Column(db.DateTime, nullable=True)
+
+    # --- Referral / recurring-deposit tracking ---
+    total_deposited = db.Column(db.Numeric(12, 2), nullable=False, default=0)  # lifetime deposits, never reduced by withdrawals
+    first_deposit_at = db.Column(db.DateTime, nullable=True)
+    next_weekly_deposit_due = db.Column(db.Date, nullable=True)
+
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    transactions = db.relationship("Transaction", backref="account",
+                                    cascade="all, delete-orphan",
+                                    order_by="Transaction.created_at.desc()")
+
+    def __repr__(self):
+        return f"<SavingsAccount user={self.user_id} balance={self.balance}>"
+
+
+class Transaction(db.Model):
+    __tablename__ = "transactions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    account_id = db.Column(db.Integer, db.ForeignKey("savings_accounts.id"), nullable=False)
+    tx_type = db.Column(db.String(30), nullable=False)
+    # deposit | withdrawal | withdrawal_request | interest_accrual | interest_withdrawal | referral_bonus
+    amount = db.Column(db.Numeric(12, 2), nullable=False)
+    balance_after = db.Column(db.Numeric(12, 2), nullable=True)
+    channel = db.Column(db.String(20), default="mpesa")  # mpesa | cash | bank | system
+    status = db.Column(db.String(20), default="pending")  # pending | completed | failed
+    mpesa_receipt = db.Column(db.String(40), nullable=True)
+    mpesa_checkout_request_id = db.Column(db.String(60), nullable=True, index=True)
+    notes = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Transaction {self.tx_type} {self.amount} status={self.status}>"
