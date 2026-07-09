@@ -10,6 +10,12 @@
             Withdrawal requests need admin approval before payout.
         </p>
 
+        <div class="bg-sand-100/70 border border-sand-200 rounded-2xl p-4 text-sm text-slate-600 mb-6 space-y-1">
+            <p>&bull; This withdraws from your <strong>savings balance</strong> only &mdash; your interest balance is separate and can be withdrawn any time from your dashboard (every 7 days).</p>
+            <p>&bull; Withdrawing savings doesn't affect referral bonuses you've already qualified for.</p>
+            <p>&bull; If your balance drops below KES {{ "{:,}".format(min_deposit) if min_deposit is defined else "3,000" }}, weekly interest won't accrue until you top back up.</p>
+        </div>
+
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <form method="POST" class="space-y-4">
                 <div>
