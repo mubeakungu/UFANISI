@@ -46,7 +46,7 @@ class Config:
     # deposited >= REFERRAL_MIN_DEPOSIT, the referrer earns REFERRAL_BONUS_RATE of each
     # qualifying referred member's total deposit, credited to the referrer's interest_balance.
     REFERRAL_MIN_COUNT = int(os.environ.get("REFERRAL_MIN_COUNT", "1"))
-    REFERRAL_MIN_DEPOSIT = int(os.environ.get("REFERRAL_MIN_DEPOSIT", "10000"))
+    REFERRAL_MIN_DEPOSIT = int(os.environ.get("REFERRAL_MIN_DEPOSIT", "3000"))
     REFERRAL_BONUS_RATE = float(os.environ.get("REFERRAL_BONUS_RATE", "0.025"))
 
     # Recurring savings: after a member's first deposit, they're expected to deposit at
