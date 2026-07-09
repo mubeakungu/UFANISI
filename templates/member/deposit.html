@@ -7,6 +7,12 @@
         <h1 class="text-2xl font-extrabold text-slate-900 mb-1">Deposit via M-Pesa</h1>
         <p class="text-slate-500 text-sm mb-6">You'll get an STK push prompt to complete this on your phone.</p>
 
+        <div class="bg-sand-100/70 border border-sand-200 rounded-2xl p-4 text-sm text-slate-600 mb-6">
+            <p>&bull; Minimum deposit: <strong>KES {{ "{:,}".format(min_deposit) }}</strong></p>
+            <p>&bull; After your first deposit, keep saving at least <strong>KES {{ "{:,}".format(weekly_deposit_amount) if weekly_deposit_amount is defined else "1,000" }}</strong> every week</p>
+            <p>&bull; Deposits earn <strong>5% weekly interest</strong> automatically</p>
+        </div>
+
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <form method="POST" class="space-y-4">
                 <div>
