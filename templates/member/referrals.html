@@ -8,8 +8,13 @@
         <div class="max-w-3xl">
             <h1 class="text-2xl font-extrabold text-slate-900 mb-1">Referrals</h1>
             <p class="text-slate-500 text-sm mb-6">
-                Refer {{ min_count }} members who each save at least KES {{ "{:,}".format(min_deposit) }}
-                and earn a {{ (bonus_rate * 100) | round(2) }}% bonus on each of their deposits.
+                {% if min_count == 1 %}
+                    Refer a member who deposits the minimum amount of KES {{ "{:,}".format(min_deposit) }}
+                    and earn a {{ (bonus_rate * 100) | round(2) }}% bonus on their deposits.
+                {% else %}
+                    Refer {{ min_count }} members who each deposit the minimum amount of KES {{ "{:,}".format(min_deposit) }}
+                    and earn a {{ (bonus_rate * 100) | round(2) }}% bonus on each of their deposits.
+                {% endif %}
             </p>
 
             <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm mb-6">
@@ -52,7 +57,7 @@
             {% if slots_remaining > 0 %}
             <div class="bg-sand-100/70 border border-sand-200 rounded-2xl p-4 text-sm text-slate-600 mb-6">
                 Refer {{ slots_remaining }} more member{{ 's' if slots_remaining != 1 else '' }} who each deposit
-                at least KES {{ "{:,}".format(min_deposit) }} to start earning your {{ (bonus_rate * 100) | round(2) }}% bonus.
+                the minimum amount of KES {{ "{:,}".format(min_deposit) }} to start earning your {{ (bonus_rate * 100) | round(2) }}% bonus.
             </div>
             {% else %}
             <div class="bg-brand-700/10 border border-brand-700/20 rounded-2xl p-4 text-sm text-brand-700 mb-6">
