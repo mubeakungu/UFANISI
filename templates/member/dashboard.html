@@ -96,7 +96,7 @@
                     {% else %}
                         <span class="text-slate-300">&#9675;</span>
                     {% endif %}
-                    Be a member for at least {{ qualification_min_months if qualification_min_months is defined else 6 }} months
+                    Be a member for at least {{ qualification_min_months if qualification_min_months is defined else 3 }} months
                     <span class="text-slate-400">(so far: {{ current_user.membership_months }})</span>
                 </li>
             </ul>
