@@ -5,7 +5,26 @@
     {% include "_sidebar.html" %}
     <main class="flex-1 p-6 md:p-10 max-w-lg">
         <h1 class="text-2xl font-extrabold text-slate-900 mb-1">Deposit via M-Pesa</h1>
-        <p class="text-slate-500 text-sm mb-6">You'll get an STK push prompt to complete this on your phone.</p>
+        <p class="text-slate-500 text-sm mb-6">Choose to pay via Till Number, or get an STK push prompt sent directly to your phone.</p>
+
+        <div class="bg-brand-700 rounded-2xl p-5 mb-6 text-white">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-xl">&#128179;</span>
+                <h3 class="font-bold">Deposit via Till Number</h3>
+            </div>
+            <p class="text-sm text-white/85 mb-3">Go to M-Pesa &rarr; Lipa na M-Pesa &rarr; Buy Goods and Services, then enter this till number to save with Ufanisi Sacco.</p>
+            <div class="bg-white/10 rounded-xl px-4 py-3 inline-flex items-center gap-3">
+                <span class="text-xs uppercase tracking-wide text-white/70">Till Number</span>
+                <span class="text-2xl font-extrabold tracking-wide">{{ till_number }}</span>
+            </div>
+            <p class="text-xs text-white/70 mt-3">Till deposits are matched to your account automatically using your M-Pesa phone number, and usually reflect within a few minutes.</p>
+        </div>
+
+        <div class="flex items-center gap-3 mb-6">
+            <div class="h-px bg-slate-200 flex-1"></div>
+            <span class="text-xs uppercase tracking-wide text-slate-400 font-semibold">or use STK push</span>
+            <div class="h-px bg-slate-200 flex-1"></div>
+        </div>
 
         <div class="bg-sand-100/70 border border-sand-200 rounded-2xl p-4 text-sm text-slate-600 mb-6">
             <p>&bull; Minimum deposit: <strong>KES {{ "{:,}".format(min_deposit) }}</strong></p>
