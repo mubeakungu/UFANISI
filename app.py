@@ -61,6 +61,11 @@ def create_app():
     return app
 
 
+@app.context_processor
+def inject_till_number():
+    return dict(till_number=current_app.config["MPESA_SHORTCODE"])
+
+
 def _ensure_default_admin(app):
     """Create a default admin account on first run if none exists."""
     if User.query.filter_by(role="admin").first():
