@@ -3,6 +3,7 @@ from flask_login import current_user
 from config import Config
 from extensions import db, login_manager
 from models import User
+from flask import current_app
 
 
 def _to_whatsapp_format(phone: str) -> str:
