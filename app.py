@@ -3,7 +3,6 @@ from flask_login import current_user
 from config import Config
 from extensions import db, login_manager
 from models import User
-from flask import current_app
 
 
 def _to_whatsapp_format(phone: str) -> str:
@@ -21,6 +20,7 @@ def _to_whatsapp_format(phone: str) -> str:
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+
     db.init_app(app)
     login_manager.init_app(app)
 
@@ -51,6 +51,7 @@ def create_app():
         return {
             "sacco_name": app.config["SACCO_NAME"],
             "whatsapp_number": _to_whatsapp_format(app.config["ADMIN_PHONE"]),
+            "till_number": app.config["MPESA_SHORTCODE"],
         }
 
     with app.app_context():
@@ -58,12 +59,8 @@ def create_app():
         _ensure_default_admin(app)
 
     _register_cli_commands(app)
+
     return app
-
-
-@app.context_processor
-def inject_till_number():
-    return dict(till_number=current_app.config["MPESA_SHORTCODE"])
 
 
 def _ensure_default_admin(app):
