@@ -59,7 +59,7 @@ class Config:
     # QUALIFICATION_MIN_MEMBERSHIP_MONTHS months.
     QUALIFICATION_MIN_SAVINGS = int(os.environ.get("QUALIFICATION_MIN_SAVINGS", "10000"))
     QUALIFICATION_MIN_REFERRALS = int(os.environ.get("QUALIFICATION_MIN_REFERRALS", "10"))
-    QUALIFICATION_MIN_MEMBERSHIP_MONTHS = int(os.environ.get("QUALIFICATION_MIN_MEMBERSHIP_MONTHS", "6"))
+    QUALIFICATION_MIN_MEMBERSHIP_MONTHS = int(os.environ.get("QUALIFICATION_MIN_MEMBERSHIP_MONTHS", "3"))
 
     # Password reset emails (optional — if left blank, reset links are logged to console
     # instead of emailed, so the app still works without SMTP configured)
