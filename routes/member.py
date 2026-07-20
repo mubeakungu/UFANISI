@@ -31,6 +31,7 @@ def dashboard():
         referral_min_count=current_app.config["REFERRAL_MIN_COUNT"],
         referral_min_deposit=current_app.config["REFERRAL_MIN_DEPOSIT"],
         referral_bonus_rate=current_app.config["REFERRAL_BONUS_RATE"],
+        till_number=current_app.config["MPESA_SHORTCODE"],
     )
 
 
