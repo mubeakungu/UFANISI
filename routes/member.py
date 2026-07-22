@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
 from flask_login import login_required, current_user
 
 from extensions import db
@@ -30,7 +30,6 @@ def dashboard():
         referral_min_count=current_app.config["REFERRAL_MIN_COUNT"],
         referral_min_deposit=current_app.config["REFERRAL_MIN_DEPOSIT"],
         referral_bonus_rate=current_app.config["REFERRAL_BONUS_RATE"],
-        till_number=current_app.config["MPESA_SHORTCODE"],
     )
 
 
@@ -90,19 +89,18 @@ def referrals():
 def deposit():
     """
     Members pay into the SACCO till directly via M-Pesa Buy Goods (see the
-    till-number card on the dashboard). This form is a manual claim: it just
-    records what the member says they paid so an admin can cross-check it
-    against the till statement and mark it completed. Nothing here calls
-    M-Pesa automatically.
+    till-number card injected globally via app.py's context_processor). This
+    form is a manual claim: it just records what the member says they paid so
+    an admin can cross-check it against the till statement and mark it
+    completed. Nothing here calls M-Pesa automatically.
     """
-    till_number = current_app.config["MPESA_SHORTCODE"]
-
     if request.method == "POST":
         amount = request.form.get("amount", "").strip()
         phone_number = request.form.get("phone_number", current_user.phone_number).strip()
         mpesa_receipt = request.form.get("mpesa_receipt", "").strip()
 
         min_deposit = current_app.config["MIN_DEPOSIT_AMOUNT"]
+        till_number = current_app.config["MPESA_SHORTCODE"]
 
         if not amount or not amount.isdigit() or int(amount) < min_deposit:
             flash(f"Minimum deposit is KES {min_deposit:,}.", "danger")
@@ -110,7 +108,6 @@ def deposit():
                 "member/deposit.html",
                 min_deposit=min_deposit,
                 weekly_deposit_amount=current_app.config["WEEKLY_DEPOSIT_AMOUNT"],
-                till_number=till_number,
             )
 
         account = current_user.account
@@ -140,7 +137,6 @@ def deposit():
         "member/deposit.html",
         min_deposit=current_app.config["MIN_DEPOSIT_AMOUNT"],
         weekly_deposit_amount=current_app.config["WEEKLY_DEPOSIT_AMOUNT"],
-        till_number=till_number,
     )
 
 
