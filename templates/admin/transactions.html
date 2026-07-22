@@ -30,7 +30,7 @@
             <div class="overflow-x-auto">
                 <table class="data-table w-full">
                     <thead>
-                        <tr><th>Date</th><th>Member</th><th>Type</th><th>Channel</th><th>Amount</th><th>Status</th><th>Receipt/Notes</th></tr>
+                        <tr><th>Date</th><th>Member</th><th>Type</th><th>Channel</th><th>Amount</th><th>Status</th><th>Receipt/Notes</th><th></th></tr>
                     </thead>
                     <tbody>
                     {% for tx in (pagination.items if pagination else []) %}
@@ -54,9 +54,30 @@
                                 {% endif %}
                             </td>
                             <td class="text-slate-400">{{ tx.mpesa_receipt or tx.notes or '-' }}</td>
+                            <td class="whitespace-nowrap">
+                                {% if tx.status == 'pending' %}
+                                    {% if tx.tx_type == 'deposit' %}
+                                        <form method="POST" action="{{ url_for('admin.approve_deposit', tx_id=tx.id) }}" class="inline">
+                                            <button type="submit" class="text-brand-700 font-semibold text-sm hover:underline">Approve</button>
+                                        </form>
+                                        <span class="text-slate-300">&middot;</span>
+                                        <form method="POST" action="{{ url_for('admin.reject_deposit', tx_id=tx.id) }}" class="inline" onsubmit="return confirm('Reject this deposit claim?');">
+                                            <button type="submit" class="text-red-600 font-semibold text-sm hover:underline">Reject</button>
+                                        </form>
+                                    {% elif tx.tx_type in ('withdrawal_request', 'interest_withdrawal') %}
+                                        <form method="POST" action="{{ url_for('admin.approve_withdrawal', tx_id=tx.id) }}" class="inline">
+                                            <button type="submit" class="text-brand-700 font-semibold text-sm hover:underline">Approve</button>
+                                        </form>
+                                        <span class="text-slate-300">&middot;</span>
+                                        <form method="POST" action="{{ url_for('admin.reject_withdrawal', tx_id=tx.id) }}" class="inline" onsubmit="return confirm('Reject this withdrawal request?');">
+                                            <button type="submit" class="text-red-600 font-semibold text-sm hover:underline">Reject</button>
+                                        </form>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
                         </tr>
                     {% else %}
-                        <tr><td colspan="7" class="text-center text-slate-400 py-10">No transactions match these filters.</td></tr>
+                        <tr><td colspan="8" class="text-center text-slate-400 py-10">No transactions match these filters.</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>
