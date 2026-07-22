@@ -25,6 +25,7 @@
                     <form method="POST" action="{{ url_for('admin.adjust_balance', user_id=member.id) }}" class="space-y-3">
                         <select name="tx_type" class="form-input" required>
                             <option value="deposit">Deposit (cash/bank)</option>
+                             <option value="deposit">Deposit (Mpesa)</option>
                             <option value="withdrawal">Withdrawal</option>
                         </select>
                         <input type="number" step="0.01" min="0.01" name="amount" class="form-input" placeholder="Amount (KES)" required>
