@@ -5,8 +5,7 @@
     {% include "_sidebar.html" %}
     <main class="flex-1 p-6 md:p-10 max-w-lg">
         <h1 class="text-2xl font-extrabold text-slate-900 mb-1">Deposit via M-Pesa</h1>
-        <p class="text-slate-500 text-sm mb-6">Choose to pay via Till Number, or get an STK push prompt sent directly to your phone.</p>
-
+        <p class="text-slate-500 text-sm mb-6">Pay into our till, then log your deposit below so we can match it to your account.</p>
         <div class="bg-brand-700 rounded-2xl p-5 mb-6 text-white">
             <div class="flex items-center gap-2 mb-1">
                 <span class="text-xl">&#128179;</span>
@@ -17,21 +16,13 @@
                 <span class="text-xs uppercase tracking-wide text-white/70">Till Number</span>
                 <span class="text-2xl font-extrabold tracking-wide">{{ till_number }}</span>
             </div>
-            <p class="text-xs text-white/70 mt-3">Till deposits are matched to your account automatically using your M-Pesa phone number, and usually reflect within a few minutes.</p>
+            <p class="text-xs text-white/70 mt-3">After paying, fill in the form below with the amount and your M-Pesa confirmation code so an admin can confirm it.</p>
         </div>
-
-        <div class="flex items-center gap-3 mb-6">
-            <div class="h-px bg-slate-200 flex-1"></div>
-            <span class="text-xs uppercase tracking-wide text-slate-400 font-semibold">or use STK push</span>
-            <div class="h-px bg-slate-200 flex-1"></div>
-        </div>
-
         <div class="bg-sand-100/70 border border-sand-200 rounded-2xl p-4 text-sm text-slate-600 mb-6">
             <p>&bull; Minimum deposit: <strong>KES {{ "{:,}".format(min_deposit) }}</strong></p>
             <p>&bull; After your first deposit, keep saving at least <strong>KES {{ "{:,}".format(weekly_deposit_amount) if weekly_deposit_amount is defined else "1,000" }}</strong> every week</p>
             <p>&bull; Deposits earn <strong>5% weekly interest</strong> automatically</p>
         </div>
-
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <form method="POST" class="space-y-4">
                 <div>
@@ -40,12 +31,16 @@
                     <p class="text-xs text-slate-400 mt-1">Minimum deposit is KES {{ "{:,}".format(min_deposit) }}.</p>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">M-Pesa Phone Number</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">M-Pesa Phone Number Used</label>
                     <input type="text" name="phone_number" class="form-input" value="{{ current_user.phone_number }}" placeholder="07XXXXXXXX" required>
-                    <p class="text-xs text-slate-400 mt-1">You'll receive an STK push prompt on this number.</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">M-Pesa Confirmation Code</label>
+                    <input type="text" name="mpesa_receipt" class="form-input" placeholder="e.g. QGH7XXXXXX">
+                    <p class="text-xs text-slate-400 mt-1">Optional, but speeds up confirmation.</p>
                 </div>
                 <button type="submit" class="w-full bg-brand-700 hover:bg-brand-600 text-white font-semibold rounded-xl py-3 transition">
-                    Send STK Push
+                    Submit Deposit Claim
                 </button>
             </form>
             <a href="{{ url_for('member.dashboard') }}" class="block text-center text-sm text-slate-500 hover:text-slate-700 mt-4">&larr; Back to my account</a>
