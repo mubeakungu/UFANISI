@@ -1,4 +1,5 @@
 from functools import wraps
+from datetime import datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, current_app
 from flask_login import login_required, current_user
 
@@ -42,6 +43,11 @@ def dashboard():
         .order_by(Transaction.created_at.asc())
         .all()
     )
+    pending_deposits = (
+        Transaction.query.filter_by(tx_type="deposit", status="pending")
+        .order_by(Transaction.created_at.asc())
+        .all()
+    )
 
     return render_template(
         "admin/dashboard.html",
@@ -52,6 +58,7 @@ def dashboard():
         top_savers=top_savers,
         pending_count=pending_count,
         pending_withdrawals=pending_withdrawals,
+        pending_deposits=pending_deposits,
         interest_mode=current_app.config["INTEREST_MODE"],
         interest_flat_amount=current_app.config["INTEREST_FLAT_AMOUNT"],
         interest_rate=current_app.config["INTEREST_RATE"],
@@ -70,6 +77,53 @@ def run_interest():
         "success",
     )
     return redirect(url_for("admin.dashboard"))
+
+
+@admin_bp.route("/deposits/<int:tx_id>/approve", methods=["POST"])
+@admin_required
+def approve_deposit(tx_id):
+    tx = Transaction.query.get_or_404(tx_id)
+    if tx.tx_type != "deposit":
+        abort(404)
+    if tx.status != "pending":
+        flash("This deposit has already been processed.", "warning")
+        return redirect(request.referrer or url_for("admin.dashboard"))
+
+    account = tx.account
+    amount = float(tx.amount)
+
+    account.balance = float(account.balance) + amount
+    account.total_deposited = float(account.total_deposited) + amount
+    if not account.first_deposit_at:
+        account.first_deposit_at = datetime.utcnow()
+    account.next_weekly_deposit_due = (datetime.utcnow() + timedelta(days=7)).date()
+
+    tx.balance_after = account.balance
+    tx.status = "completed"
+    tx.notes = (tx.notes or "") + f" | Approved by {current_user.full_name}"
+    db.session.commit()
+
+    flash(f"Deposit of KES {amount:,.2f} approved and credited to {account.owner.full_name}.", "success")
+    return redirect(request.referrer or url_for("admin.dashboard"))
+
+
+@admin_bp.route("/deposits/<int:tx_id>/reject", methods=["POST"])
+@admin_required
+def reject_deposit(tx_id):
+    tx = Transaction.query.get_or_404(tx_id)
+    if tx.tx_type != "deposit":
+        abort(404)
+    if tx.status != "pending":
+        flash("This deposit has already been processed.", "warning")
+        return redirect(request.referrer or url_for("admin.dashboard"))
+
+    # Nothing to reverse — a pending deposit was never credited to the balance.
+    tx.status = "failed"
+    tx.notes = (tx.notes or "") + f" | Rejected by {current_user.full_name}"
+    db.session.commit()
+
+    flash("Deposit claim rejected.", "info")
+    return redirect(request.referrer or url_for("admin.dashboard"))
 
 
 @admin_bp.route("/withdrawals/<int:tx_id>/approve", methods=["POST"])
